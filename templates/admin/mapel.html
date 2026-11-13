@@ -1,0 +1,26 @@
+{% extends 'admin/_layout.html' %}
+{% block title %}Mapel Kitab{% endblock %}
+{% block heading %}Mata Pelajaran Kitab{% endblock %}
+{% block content %}
+<div class="grid xl:grid-cols-3 gap-6">
+  <form method="post" class="card p-6 space-y-4 h-fit" id="form-mapel">
+    <h3 class="font-bold text-slate-800 text-lg">Tambah Mapel</h3>
+    <div><label class="label">Nama Mapel</label><input class="input" name="nama" required placeholder="cth: Tauhid" id="in-nama"></div>
+    <div><label class="label">Kitab yang Dikaji</label><input class="input" name="kitab" placeholder="cth: Aqidatul Awam" id="in-kitab"></div>
+    <button class="btn btn-primary w-full" id="btn-simpan-mapel">Simpan</button>
+  </form>
+  <div class="xl:col-span-2 grid sm:grid-cols-2 gap-4 h-fit">
+    {% for m in mapel %}
+    <div class="card stat-card p-5 flex items-start justify-between gap-3">
+      <div class="flex gap-4">
+        <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 grid place-items-center font-extrabold">{{ loop.index }}</div>
+        <div><p class="font-bold text-slate-800">{{ m.nama }}</p><p class="text-sm text-slate-500 italic">{{ m.kitab or '—' }}</p></div>
+      </div>
+      <form method="post" action="{{ url_for('admin_mapel_hapus', mid=m.id) }}" data-confirm="Hapus mapel {{ m.nama }} beserta semua nilainya?"><button class="btn btn-danger text-xs">Hapus</button></form>
+    </div>
+    {% else %}
+    <p class="text-slate-400">Belum ada mapel.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block nav %}
+<p class="px-4 text-[11px] font-bold uppercase tracking-wider text-brand-400 mb-2">Menu Ustadz</p>
+<a href="{{ url_for('ustadz_dashboard') }}" id="nav-dashboard" class="nav-link {{ 'active' if request.endpoint=='ustadz_dashboard' }}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>Dashboard</a>
+<p class="px-4 text-[11px] font-bold uppercase tracking-wider text-brand-400 mt-6 mb-2">Kelas Saya</p>
+{% for kk in kelas %}
+<a href="{{ url_for('ustadz_kelas_view', kid=kk.id) }}" id="nav-kelas-{{ kk.id }}" class="nav-link {{ 'active' if k is defined and k.id==kk.id }}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a4 4 0 00-5-3.9M9 20H2v-2a4 4 0 017-2.6M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>{{ kk.nama }}</a>
+{% else %}
+<p class="px-4 text-xs text-brand-300">Belum ditugaskan.</p>
+{% endfor %}
+{% endblock %}

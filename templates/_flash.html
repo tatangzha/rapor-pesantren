@@ -1,0 +1,16 @@
+{% with msgs = get_flashed_messages(with_categories=true) %}
+{% if msgs %}
+<div class="space-y-2 mb-6">
+  {% for cat, m in msgs %}
+  <div class="flash transition-opacity duration-300 flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium {{ 'bg-red-50 border-red-200 text-red-700' if cat == 'error' else 'bg-brand-50 border-brand-200 text-brand-800' }}">
+    {% if cat == 'error' %}
+    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    {% else %}
+    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    {% endif %}
+    {{ m }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}

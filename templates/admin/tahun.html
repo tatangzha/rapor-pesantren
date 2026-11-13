@@ -1,0 +1,28 @@
+{% extends 'admin/_layout.html' %}
+{% block title %}Tahun Ajaran{% endblock %}
+{% block heading %}Tahun Ajaran & Semester{% endblock %}
+{% block content %}
+<div class="grid xl:grid-cols-3 gap-6">
+  <form method="post" class="card p-6 space-y-4 h-fit" id="form-tahun">
+    <h3 class="font-bold text-slate-800 text-lg">Tambah Tahun Ajaran</h3>
+    <div><label class="label">Tahun Ajaran</label><input class="input" name="nama" required placeholder="cth: 2026/2027" id="in-tahun"></div>
+    <div><label class="label">Semester</label><select class="input" name="semester" id="in-semester"><option>Ganjil</option><option>Genap</option></select></div>
+    <button class="btn btn-primary w-full" id="btn-simpan-tahun">Simpan</button>
+    <p class="text-xs text-slate-400">Semester <b>aktif</b> adalah semester yang nilainya diinput oleh ustadz.</p>
+  </form>
+  <div class="card overflow-hidden xl:col-span-2">
+    <div class="px-6 py-4 border-b border-slate-100"><h3 class="font-bold text-slate-800">Daftar Tahun Ajaran</h3></div>
+    <table class="table">
+      <thead><tr><th>Tahun Ajaran</th><th>Semester</th><th>Status</th><th class="text-right">Aksi</th></tr></thead>
+      <tbody>
+      {% for t in tahun %}
+        <tr><td class="font-semibold text-slate-800">{{ t.nama }}</td><td>{{ t.semester }}</td>
+          <td>{% if t.aktif %}<span class="px-2.5 py-1 rounded-full bg-brand-500 text-white text-xs font-bold">● Aktif</span>
+              {% else %}<form method="post" action="{{ url_for('admin_tahun_aktif', tid=t.id) }}"><button class="text-xs font-semibold text-brand-600 hover:underline">Jadikan aktif</button></form>{% endif %}</td>
+          <td class="text-right">{% if not t.aktif %}<form method="post" action="{{ url_for('admin_tahun_hapus', tid=t.id) }}" data-confirm="Hapus tahun ajaran beserta seluruh nilainya?"><button class="btn btn-danger text-xs">Hapus</button></form>{% endif %}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

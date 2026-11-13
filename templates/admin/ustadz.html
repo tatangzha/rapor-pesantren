@@ -1,0 +1,32 @@
+{% extends 'admin/_layout.html' %}
+{% block title %}Data Ustadz{% endblock %}
+{% block heading %}Data Ustadz / Wali Kelas{% endblock %}
+{% block content %}
+<div class="grid xl:grid-cols-3 gap-6">
+  <form method="post" class="card p-6 space-y-4 h-fit" id="form-ustadz">
+    <h3 class="font-bold text-slate-800 text-lg">Tambah Ustadz</h3>
+    <div><label class="label">Nama Lengkap</label><input class="input" name="nama" required id="in-nama"></div>
+    <div><label class="label">Username</label><input class="input" name="username" required id="in-username"></div>
+    <div><label class="label">Password</label><input class="input" name="password" required id="in-password"></div>
+    <button class="btn btn-primary w-full" id="btn-simpan-ustadz">Simpan</button>
+    <p class="text-xs text-slate-400">Atur penugasan wali kelas di menu <a class="text-brand-600 font-semibold" href="{{ url_for('admin_kelas') }}">Kelas</a>.</p>
+  </form>
+  <div class="card overflow-hidden xl:col-span-2">
+    <div class="px-6 py-4 border-b border-slate-100"><h3 class="font-bold text-slate-800">Daftar Ustadz</h3></div>
+    <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>Nama</th><th>Username</th><th>Wali Kelas</th><th class="text-right">Aksi</th></tr></thead>
+      <tbody>
+      {% for u in ustadz %}
+        <tr><td class="font-semibold text-slate-800">{{ u.nama }}</td><td class="font-mono text-xs">{{ u.username }}</td>
+          <td>{% if u.kelas %}<span class="px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-bold">{{ u.kelas }}</span>{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
+          <td class="text-right"><form method="post" action="{{ url_for('admin_ustadz_hapus', uid=u.id) }}" data-confirm="Hapus {{ u.nama }}?"><button class="btn btn-danger text-xs">Hapus</button></form></td></tr>
+      {% else %}
+        <tr><td colspan="4" class="text-center text-slate-400 py-8">Belum ada ustadz.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

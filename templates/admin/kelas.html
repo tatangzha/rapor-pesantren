@@ -1,0 +1,35 @@
+{% extends 'admin/_layout.html' %}
+{% block title %}Kelas{% endblock %}
+{% block heading %}Kelas & Wali Kelas{% endblock %}
+{% block content %}
+<div class="grid xl:grid-cols-3 gap-6">
+  <form method="post" class="card p-6 space-y-4 h-fit" id="form-kelas">
+    <h3 class="font-bold text-slate-800 text-lg">Tambah Kelas</h3>
+    <div><label class="label">Nama Kelas</label><input class="input" name="nama" required placeholder="cth: Kelas 3 Wustho" id="in-kelas"></div>
+    <div><label class="label">Wali Kelas</label>
+      <select class="input" name="wali_id" id="in-wali"><option value="">— Belum ditentukan —</option>
+        {% for u in ustadz %}<option value="{{ u.id }}">{{ u.nama }}</option>{% endfor %}</select></div>
+    <button class="btn btn-primary w-full" id="btn-simpan-kelas">Simpan</button>
+  </form>
+  <div class="card overflow-hidden xl:col-span-2">
+    <div class="px-6 py-4 border-b border-slate-100"><h3 class="font-bold text-slate-800">Daftar Kelas</h3></div>
+    <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>Kelas</th><th>Wali Kelas (ubah langsung)</th><th>Santri</th><th class="text-right">Aksi</th></tr></thead>
+      <tbody>
+      {% for k in kelas %}
+        <tr><td class="font-semibold text-slate-800">{{ k.nama }}</td>
+          <td><form method="post" class="flex gap-2"><input type="hidden" name="id" value="{{ k.id }}"><input type="hidden" name="nama" value="{{ k.nama }}">
+            <select class="input !py-1.5" name="wali_id" onchange="this.form.submit()"><option value="">— Belum ditentukan —</option>
+              {% for u in ustadz %}<option value="{{ u.id }}" {{ 'selected' if k.wali_id==u.id }}>{{ u.nama }}</option>{% endfor %}</select></form></td>
+          <td><span class="px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-bold">{{ k.jml }}</span></td>
+          <td class="text-right"><form method="post" action="{{ url_for('admin_kelas_hapus', kid=k.id) }}" data-confirm="Hapus {{ k.nama }}?"><button class="btn btn-danger text-xs">Hapus</button></form></td></tr>
+      {% else %}
+        <tr><td colspan="4" class="text-center text-slate-400 py-8">Belum ada kelas.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

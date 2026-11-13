@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Rapor Semester 1 &amp; 2 — Madrasah Islami Salafi Ihya 'Ulumiddin</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f7f4;
+      color: #1e293b;
+    }
+    .font-arabic {
+      font-family: 'Amiri', serif;
+      direction: rtl;
+    }
+    @media print {
+      body {
+        background: #ffffff !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-container {
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      .print-page-break {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Toast Notification -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 no-print"></div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirm-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4 no-print">
+    <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 border border-emerald-100">
+      <h3 id="confirm-title" class="text-lg font-semibold text-slate-900 mb-2">Konfirmasi</h3>
+      <p id="confirm-message" class="text-sm text-slate-600 mb-5"></p>
+      <div class="flex justify-end gap-2">
+        <button id="confirm-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition">Batal</button>
+        <button id="confirm-ok" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Student Modal -->
+  <div id="add-student-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-4 no-print">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-emerald-100">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-slate-900">Tambah Santri Baru</h3>
+        <button id="close-add-student" type="button" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+      </div>
+      <form id="add-student-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Nomor Induk Santri (NIS)</label>
+          <input id="new-nis" type="text" required placeholder="Contoh: 2526010350" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Nama Lengkap Santri</label>
+          <input id="new-nama" type="text" required placeholder="Contoh: Ahmad Fauzi" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Jenis Kelamin</label>
+            <select id="new-jk" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <option value="L">Laki-laki (L)</option>
+              <option value="P">Perempuan (P)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Nama Orang Tua / Wali</label>
+            <input id="new-wali" type="text" placeholder="Nama Wali" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button id="cancel-add-student" type="button" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100">Batal</button>
+          <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700">Simpan Santri</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LOGIN VIEW -->
+  <div id="login-view" class="flex-1 flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-lg border border-emerald-100 overflow-hidden">
+      <div class="bg-gradient-to-br from-emerald-800 to-emerald-600 px-6 py-7 text-center text-white">
+        <div class="mx-auto w-14 h-14 bg-white/15 rounded-2xl flex items-center justify-center mb-3 backdrop-blur-sm border border-white/20">
+          <svg class="w-8 h-8 text-emerald-100" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        <p class="font-arabic text-xl text-emerald-100 leading-relaxed">مدرسة الاسلامي السلفي إحياء علوم الدين</p>
+        <h1 class="text-lg font-bold tracking-tight mt-1">E-Rapor Pondok Pesantren</h1>
+        <p class="text-xs text-emerald-100/90 mt-0.5">Ihya 'Ulumiddin Pamarican &bull; 63 Santri (Semester 1 &amp; 2)</p>
+      </div>
+
+      <div class="p-6">
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label for="login-username" class="block text-xs font-semibold text-slate-700 mb-1">Username / Nomor Induk Santri (NIS)</label>
+            <input id="login-username" type="text" required placeholder="Contoh: admin, tatang, atau 2526010288" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+          </div>
+          <div>
+            <label for="login-password" class="block text-xs font-semibold text-slate-700 mb-1">Kata Sandi</label>
+            <input id="login-password" type="password" required placeholder="Masukkan kata sandi" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+          </div>
+          <div id="login-error" class="hidden text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2"></div>
+          <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm shadow-sm transition">
+            Masuk ke E-Rapor
+          </button>
+        </form>
+
+        <div class="mt-6 pt-5 border-t border-slate-100">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2.5 text-center">Akun Uji Coba Cepat (Klik untuk Masuk)</p>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" data-demo-user="admin" data-demo-pass="admin123" class="demo-login-btn px-2.5 py-2 rounded-xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 text-center transition">
+              <span class="block text-xs font-semibold text-slate-800">Admin</span>
+              <span class="block text-[10px] text-slate-500">admin</span>
+            </button>
+            <button type="button" data-demo-user="tatang" data-demo-pass="ustadz123" class="demo-login-btn px-2.5 py-2 rounded-xl border border-emerald-200 bg-emerald-50/50 hover:border-emerald-500 hover:bg-emerald-50 text-center transition">
+              <span class="block text-xs font-semibold text-emerald-800">Wali Kelas</span>
+              <span class="block text-[10px] text-emerald-600">tatang</span>
+            </button>
+            <button type="button" data-demo-user="2526010288" data-demo-pass="santri123" class="demo-login-btn px-2.5 py-2 rounded-xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 text-center transition">
+              <span class="block text-xs font-semibold text-slate-800">Santri #3</span>
+              <span class="block text-[10px] text-slate-500">AFIFAH</span>
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-400 text-center mt-2.5">Semua 63 santri (misal <code class="text-slate-600">2526010286</code>) memakai sandi <code class="text-slate-600">santri123</code></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP VIEW (Authenticated) -->
+  <div id="app-view" class="hidden flex-1 flex flex-col">
+    <!-- Top Navbar -->
+    <header class="bg-white border-b border-emerald-100 sticky top-0 z-30 no-print">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 font-bold text-sm">
+            IU
+          </div>
+          <div class="min-w-0">
+            <h2 class="text-sm sm:text-base font-bold text-slate-900 truncate">E-Rapor Ihya 'Ulumiddin</h2>
+            <p id="nav-subtitle" class="text-xs text-slate-500 truncate">1 MISIU &bull; Semester 1 (2025/2026)</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+          <!-- Semester Switcher -->
+          <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+            <button id="btn-sem-1" type="button" class="sem-switch-btn px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition bg-emerald-600 text-white shadow-sm">
+              Sem 1 (Ganjil)
+            </button>
+            <button id="btn-sem-2" type="button" class="sem-switch-btn px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900">
+              Sem 2 (Genap)
+            </button>
+          </div>
+
+          <div class="hidden md:flex items-center gap-2 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-full">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="user-badge" class="text-xs font-semibold text-emerald-800">Wali Kelas: TATANG</span>
+          </div>
+          <button id="btn-reset-data" type="button" class="hidden px-3 py-1.5 rounded-lg text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition">
+            Reset Awal
+          </button>
+          <button id="btn-logout" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition">
+            Keluar
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs (Admin & Wali Kelas) -->
+      <div id="staff-tabs" class="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1 overflow-x-auto border-t border-slate-100 bg-slate-50/70">
+        <button type="button" data-tab="daftar" class="nav-tab px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 border-emerald-600 text-emerald-700 whitespace-nowrap">
+          Daftar Nilai &amp; Ranking
+        </button>
+        <button type="button" data-tab="input" class="nav-tab px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap">
+          Input / Edit Nilai
+        </button>
+        <button type="button" data-tab="pengaturan" class="nav-tab px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap">
+          Pengaturan Mapel &amp; Madrasah
+        </button>
+        <button type="button" data-tab="cetak" class="nav-tab px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900 whitespace-nowrap">
+          Pratinjau &amp; Cetak Rapor
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
+
+      <!-- TAB 1: DAFTAR NILAI & RANKING -->
+      <section id="tab-daftar" class="space-y-5">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+            <p class="text-xs font-medium text-slate-500">Jumlah Santri</p>
+            <p id="stat-total-santri" class="text-2xl font-bold text-slate-900 mt-1">63</p>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+            <p class="text-xs font-medium text-slate-500">Rata-rata Kelas</p>
+            <p id="stat-rata-kelas" class="text-2xl font-bold text-emerald-700 mt-1">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+            <p class="text-xs font-medium text-slate-500">Nilai Tertinggi</p>
+            <p id="stat-max-nilai" class="text-2xl font-bold text-slate-900 mt-1">0</p>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+            <p class="text-xs font-medium text-slate-500">Periode Aktif</p>
+            <p id="stat-kelas-label" class="text-lg font-bold text-slate-900 mt-1 truncate">1 MISIU (Sem 1)</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 id="table-heading" class="text-base font-bold text-slate-900">Rekap Nilai Santri — Semester 1 (Ganjil)</h3>
+              <p class="text-xs text-slate-500">Klik nama santri untuk mengubah nama langsung, atau pilih aksi di sebelah kanan.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="search-santri" type="text" placeholder="Cari NIS atau nama..." class="px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none w-full sm:w-52" />
+              <button id="btn-open-add-student" type="button" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition">
+                + Santri
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto max-h-[540px]">
+            <table class="w-full text-left border-collapse">
+              <thead class="sticky top-0 bg-slate-50 z-10 shadow-sm">
+                <tr class="border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <th class="py-3 px-4">Rank</th>
+                  <th class="py-3 px-4">NIS</th>
+                  <th class="py-3 px-4">Nama Santri (Bisa Diedit)</th>
+                  <th class="py-3 px-4 text-center">L/P</th>
+                  <th class="py-3 px-4 text-right">Jumlah Nilai</th>
+                  <th class="py-3 px-4 text-right">Rata-rata</th>
+                  <th class="py-3 px-4 text-center">Kepribadian</th>
+                  <th class="py-3 px-4 text-center">Absensi (S/I/A)</th>
+                  <th class="py-3 px-4 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="student-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: INPUT / EDIT NILAI -->
+      <section id="tab-input" class="hidden space-y-5">
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 sm:p-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+            <div>
+              <h3 id="input-heading" class="text-base font-bold text-slate-900">Input &amp; Edit Nilai Rapor Santri</h3>
+              <p class="text-xs text-slate-500">Perubahan angka otomatis menghitung terbilang Indonesia, lafadz Arab, dan peringkat kelas.</p>
+            </div>
+            <div class="w-full sm:w-80">
+              <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Pilih Santri</label>
+              <select id="select-edit-student" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-none"></select>
+            </div>
+          </div>
+
+          <div id="edit-student-panel" class="mt-5 space-y-6">
+            <!-- Biodata ringkas -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Nama Lengkap Santri</label>
+                <input id="edit-nama" type="text" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Nama Orang Tua / Wali</label>
+                <input id="edit-wali" type="text" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+              </div>
+              <div id="edit-keputusan-wrap">
+                <label class="block text-xs font-medium text-slate-600 mb-1">Keputusan Kenaikan (Khusus Sem 2)</label>
+                <select id="edit-keputusan" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                  <option value="Naik Kelas Ke Kelas 3">Naik Kelas Ke Kelas 3</option>
+                  <option value="Naik Kelas Ke Kelas 2">Naik Kelas Ke Kelas 2</option>
+                  <option value="Tinggal Kelas">Tinggal Kelas</option>
+                  <option value="Lulus">Lulus</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Bagian A: Tes Tulis -->
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-bold text-slate-800">A. TES TULIS (<span class="font-arabic">الكتابة</span>)</h4>
+                <span class="text-xs text-slate-500">Isi 0 jika mapel tidak diujikan</span>
+              </div>
+              <div id="edit-tulis-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+            </div>
+
+            <!-- Bagian B & C -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-slate-50/70 p-4 rounded-xl border border-slate-200/70">
+                <h4 id="edit-b-title" class="text-sm font-bold text-slate-800 mb-3">B. HAFALAN (<span class="font-arabic">المحا فظة</span>)</h4>
+                <div id="edit-hafalan-grid" class="space-y-3"></div>
+              </div>
+              <div class="bg-slate-50/70 p-4 rounded-xl border border-slate-200/70">
+                <h4 id="edit-c-title" class="text-sm font-bold text-slate-800 mb-3">C. TES BACA KITAB (<span class="font-arabic">قراءة الكتاب</span>)</h4>
+                <div id="edit-kitab-grid" class="space-y-3"></div>
+              </div>
+            </div>
+
+            <!-- Kepribadian, Absensi & Catatan -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div class="bg-slate-50/70 p-4 rounded-xl border border-slate-200/70 space-y-3">
+                <h4 class="text-sm font-bold text-slate-800">Kepribadian</h4>
+                <div class="grid grid-cols-2 items-center gap-2">
+                  <label class="text-xs text-slate-600">1. Kelakuan</label>
+                  <select id="edit-kelakuan" class="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-sm">
+                    <option value="A">A - Sangat Baik</option>
+                    <option value="B">B - Baik</option>
+                    <option value="C">C - Cukup</option>
+                    <option value="D">D - Kurang</option>
+                    <option value="E">E - Buruk</option>
+                  </select>
+                </div>
+                <div class="grid grid-cols-2 items-center gap-2">
+                  <label class="text-xs text-slate-600">2. Kerajinan</label>
+                  <select id="edit-kerajinan" class="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-sm">
+                    <option value="A">A - Sangat Baik</option>
+                    <option value="B">B - Baik</option>
+                    <option value="C">C - Cukup</option>
+                    <option value="D">D - Kurang</option>
+                    <option value="E">E - Buruk</option>
+                  </select>
+                </div>
+                <div class="grid grid-cols-2 items-center gap-2">
+                  <label class="text-xs text-slate-600">3. Kerapihan</label>
+                  <select id="edit-kerapihan" class="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-sm">
+                    <option value="A">A - Sangat Baik</option>
+                    <option value="B">B - Baik</option>
+                    <option value="C">C - Cukup</option>
+                    <option value="D">D - Kurang</option>
+                    <option value="E">E - Buruk</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="bg-slate-50/70 p-4 rounded-xl border border-slate-200/70 space-y-3">
+                <h4 class="text-sm font-bold text-slate-800">Absensi (<span class="font-arabic">كشف الغياب</span>)</h4>
+                <div class="grid grid-cols-2 items-center gap-2">
+                  <label class="text-xs text-slate-600">Sakit (<span class="font-arabic">بعذر</span>)</label>
+                  <input id="edit-sakit" type="number" min="0" class="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-sm" />
+                </div>
+                <div class="grid grid-cols-2 items-center gap-2">
+                  <label class="text-xs text-slate-600">Izin (<span class="font-arabic">بغير عذر</span>)</label>
+                  <input id="edit-izin" type="number" min="0" class="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-sm" />
+                </div>
+                <div class="grid grid-cols-2 items-center gap-2">
+                  <label class="text-xs text-slate-600">Alpa (<span class="font-arabic">بغير بيان</span>)</label>
+                  <input id="edit-alpa" type="number" min="0" class="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-sm" />
+                </div>
+              </div>
+
+              <div class="bg-slate-50/70 p-4 rounded-xl border border-slate-200/70 flex flex-col justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-slate-800 mb-2">Catatan Wali Kelas</h4>
+                  <textarea id="edit-catatan" rows="3" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-arabic text-right focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+                </div>
+                <div class="pt-3 flex items-center justify-between text-xs">
+                  <span class="text-slate-500">Total Sementara:</span>
+                  <span id="edit-live-total" class="text-base font-bold text-emerald-700">0</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-end gap-3 pt-2 border-t border-slate-100">
+              <button id="btn-save-and-print" type="button" class="px-4 py-2.5 rounded-xl text-sm font-semibold border border-emerald-600 text-emerald-700 hover:bg-emerald-50 transition">
+                Simpan &amp; Lihat Rapor
+              </button>
+              <button id="btn-save-student" type="button" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition">
+                Simpan Perubahan
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: PENGATURAN MAPEL & MADRASAH -->
+      <section id="tab-pengaturan" class="hidden space-y-5">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <!-- Data Madrasah -->
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+            <h3 id="cfg-heading" class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">Pengaturan Rapor</h3>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Kelas</label>
+              <input id="cfg-kelas" type="text" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Tahun Pelajaran</label>
+              <input id="cfg-tahun" type="text" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Tanggal Dikeluarkan</label>
+              <input id="cfg-tanggal" type="text" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Nama Wali Kelas</label>
+              <input id="cfg-wali-kelas" type="text" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Kepala Madrasah</label>
+              <input id="cfg-kepala" type="text" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+            </div>
+            <button id="btn-save-config" type="button" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold transition">
+              Simpan Data Madrasah
+            </button>
+          </div>
+
+          <!-- Pengaturan Mata Pelajaran -->
+          <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-base font-bold text-slate-900">Daftar Mata Pelajaran (Indonesia &amp; Arab)</h3>
+                <p class="text-xs text-slate-500">Biarkan kosong jika slot tidak dipakai pada semester aktif.</p>
+              </div>
+              <button id="btn-save-subjects" type="button" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition">
+                Simpan Mapel
+              </button>
+            </div>
+            <div id="subjects-config-list" class="space-y-4 max-h-[540px] overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: PRATINJAU & CETAK RAPOR (MODEL 1) -->
+      <section id="tab-cetak" class="space-y-4">
+        <!-- Toolbar Cetak -->
+        <div id="print-toolbar" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 no-print">
+          <div id="print-student-selector-wrap" class="flex items-center gap-3">
+            <label class="text-xs font-semibold text-slate-600 whitespace-nowrap">Santri:</label>
+            <select id="select-print-student" class="px-3 py-2 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-none"></select>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="print-sem-badge" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200"></span>
+            <button id="btn-print-raport" type="button" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+              Cetak / Simpan PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Lembar Rapor Resmi (Raport Model 1) -->
+        <div id="raport-sheet" class="print-container bg-white max-w-4xl mx-auto p-6 sm:p-10 rounded-2xl shadow-sm border border-slate-200 text-slate-900">
+          <!-- Rendered by JS -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'eraport_misiu_dual_sem_v2';
+
+      const DEFAULT_SUBJECTS = {
+        tulis: [
+          { id: 't1', no: 1, indo: 'Tanbihul Muta’alim', arab: 'تنبيه المتعلمين', active: true },
+          { id: 't2', no: 2, indo: 'Al- Jurumiyah', arab: 'الجرمية', active: true },
+          { id: 't3', no: 3, indo: 'Amtsilatu tasrifiyah', arab: 'امثلة التصريفية', active: true },
+          { id: 't4', no: 4, indo: 'Aqidatul Awam', arab: 'عقيدة العوام', active: true },
+          { id: 't5', no: 5, indo: 'Mabadi Fiqh', arab: 'المبدئ الفقهيّه', active: true },
+          { id: 't6', no: 6, indo: 'Khulashah Nurul Yaqin', arab: 'خلاصة نور اليقين', active: true },
+          { id: 't7', no: 7, indo: 'Risalatul Mahid', arab: 'رسالة المحيض', active: true },
+          { id: 't8', no: 8, indo: 'Hidayatus Sibyan', arab: 'هداية الصبيان', active: true },
+          { id: 't9', no: 9, indo: 'Fasholatan', arab: 'فصلة', active: true },
+          { id: 't10', no: 10, indo: '', arab: '', active: false },
+          { id: 't11', no: 11, indo: '', arab: '', active: false },
+          { id: 't12', no: 12, indo: '', arab: '', active: false }
+        ],
+        hafalan: [
+          { id: 'h1', no: 1, indo: "Al-Qur'an", arab: 'القرأن', active: true },
+          { id: 'h2', no: 2, indo: '', arab: '', active: false }
+        ],
+        kitab: [
+          { id: 'k1', no: 1, indo: 'Safinah', arab: 'سفينة النجا', active: true },
+          { id: 'k2', no: 2, indo: '', arab: '', active: false }
+        ]
+      };
+
+      const DEFAULT_STATE = {
+        activeSemester: 'sem1',
+        sharedHeader: {
+          yayasanArab: 'مؤسسة إحياء العلوم فاماريجان',
+          madrasahArabSem1: 'مدرسة الاسلامي السلفي إحياء العلوم ',
+          madrasahArabSem2: 'مدرسة الاسلامي السلفي إحياء علوم الدين',
+          statistikArab: '٥١٠٠٣٢٠٧٠٤٥٨',
+          alamatArab: 'طريق فاماريجان السريع رقم ٤٢٤ قرية / منطقة فاماريجان جياميس - جاوة الغربية الرمز البريدي : ٤٦٣٨٢'
+        },
+        semConfig: {
+          sem1: {
+            label: 'Semester 1 (Ganjil)',
+            kelas: '1 MISIU',
+            tahunPelajaran: '2025/2026',
+            tanggal: 'Pamarican, 18 Desember 2025',
+            waliKelas: 'TATANG',
+            kepalaMadrasah: 'YEDI HIDAYAT',
+            arabHeaderCol: 'نتائج التمرين الاول',
+            secBIndo: 'HAFALAN',
+            secBArab: 'المحا فظة',
+            secCIndo: 'TES BACA KITAB',
+            secCArab: 'قراءةالكتاب',
+            showKeputusan: false,
+            subjects: JSON.parse(JSON.stringify(DEFAULT_SUBJECTS))
+          },
+          sem2: {
+            label: 'Semester 2 (Genap)',
+            kelas: '2 MISIU',
+            tahunPelajaran: '2026/2027',
+            tanggal: 'Pamarican, 20 Juni 2027',
+            waliKelas: 'TATANG',
+            kepalaMadrasah: 'Ust. TAUFIK HIDAYAT',
+            arabHeaderCol: 'نتائج الامتحانات',
+            secBIndo: 'MEMBACA + HAFALAN',
+            secBArab: 'يقرأ+المحا فظة',
+            secCIndo: 'TES MEMBACA KITAB',
+            secCArab: 'قراءة الكتاب',
+            showKeputusan: true,
+            subjects: JSON.parse(JSON.stringify(DEFAULT_SUBJECTS))
+          }
+        },
+        students: [{"id": 1, "nis": "2526010286", "nama": "ABABIL ULUL ALBAB", "jk": "L", "wali": "HENDI LALA", "sem1": {"tulis": [73, 71, 70, 60, 80, 65, 88, 90, 70, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [85, 80, 80, 75, 75, 60, 75, 70, 75, 0, 0, 0], "hafalan": [80, 0], "kitab": [70, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 2, "nis": "2526010287", "nama": "ADIT KURNIAWAN", "jk": "L", "wali": "CUCU SAMSUDIN", "sem1": {"tulis": [75, 74, 78, 60, 80, 70, 82, 70, 75, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [85, 80, 85, 75, 75, 95, 80, 70, 85, 0, 0, 0], "hafalan": [85, 0], "kitab": [85, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 3, "nis": "2526010288", "nama": "AFIFAH NUR FADILAH", "jk": "P", "wali": "..........................", "sem1": {"tulis": [76, 79, 80, 85, 80, 70, 91, 75, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [85, 80, 80, 75, 75, 70, 75, 70, 75, 0, 0, 0], "hafalan": [80, 0], "kitab": [75, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 4, "nis": "2526010289", "nama": "AI 'AFIFAH SRI ZAKIYAH", "jk": "P", "wali": "JAENUDIN", "sem1": {"tulis": [80, 64, 70, 60, 80, 60, 71, 80, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [85, 80, 80, 75, 75, 70, 75, 70, 75, 0, 0, 0], "hafalan": [75, 0], "kitab": [80, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 5, "nis": "2526010290", "nama": "AKHTAR ILHAM", "jk": "L", "wali": "WAHIDIN", "sem1": {"tulis": [78, 82, 78, 65, 80, 70, 82, 75, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [85, 80, 80, 75, 75, 60, 75, 70, 75, 0, 0, 0], "hafalan": [85, 0], "kitab": [75, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 6, "nis": "2526010291", "nama": "ALFIN HIDAYATULLOH", "jk": "L", "wali": "AJO SUJANA", "sem1": {"tulis": [77, 72, 88, 75, 80, 60, 91, 90, 85, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [85, 80, 80, 75, 75, 60, 75, 70, 75, 0, 0, 0], "hafalan": [70, 0], "kitab": [75, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 7, "nis": "2425010230", "nama": "ALFIZ ZAFIRA", "jk": "P", "wali": "MUHAMAD YASIN", "sem1": {"tulis": [85, 81, 80, 70, 80, 70, 95, 80, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [85, 80, 80, 75, 75, 95, 75, 70, 80, 0, 0, 0], "hafalan": [75, 0], "kitab": [80, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 8, "nis": "2526010292", "nama": "ALWI NURDZIKRI FATAHILAH", "jk": "L", "wali": "TURASNO", "sem1": {"tulis": [72, 64, 70, 60, 80, 65, 64, 60, 65, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [85, 80, 85, 75, 75, 95, 80, 70, 85, 0, 0, 0], "hafalan": [75, 0], "kitab": [90, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 9, "nis": "2526010293", "nama": "ALYA ANGGRAENI", "jk": "P", "wali": "MUMU MUTAKIN", "sem1": {"tulis": [75, 80, 70, 70, 80, 65, 84, 85, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [85, 80, 80, 75, 75, 75, 75, 70, 75, 0, 0, 0], "hafalan": [75, 0], "kitab": [80, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 10, "nis": "2526010294", "nama": "ANGGUN QISTINA MUFIDAH", "jk": "P", "wali": "ATENG SURYANA", "sem1": {"tulis": [81, 80, 90, 80, 80, 65, 95, 85, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [85, 80, 80, 75, 75, 70, 75, 70, 75, 0, 0, 0], "hafalan": [75, 0], "kitab": [70, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 11, "nis": "2526010295", "nama": "ARIEF RACHMAN KHAKIM", "jk": "L", "wali": "..........................", "sem1": {"tulis": [75, 89, 95, 85, 80, 95, 91, 95, 90, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 12, "nis": "2526010296", "nama": "AYUSUP", "jk": "L", "wali": "DEDE USMAN", "sem1": {"tulis": [70, 68, 70, 60, 80, 60, 69, 65, 70, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 13, "nis": "2526010297", "nama": "AZIS KUSMAWAN", "jk": "L", "wali": "..........................", "sem1": {"tulis": [76, 67, 70, 60, 80, 70, 71, 60, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 14, "nis": "2425010285", "nama": "DAFFA KHAIRUL IKHWAN", "jk": "L", "wali": "..........................", "sem1": {"tulis": [70, 65, 70, 60, 80, 60, 71, 70, 60, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 15, "nis": "2526010298", "nama": "DEDE FARID HAMZAH", "jk": "L", "wali": "USUP SUPRIADI", "sem1": {"tulis": [76, 77, 78, 60, 80, 65, 86, 80, 75, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 16, "nis": "2526010299", "nama": "DEWI LESTARI", "jk": "P", "wali": "JANA", "sem1": {"tulis": [78, 66, 70, 75, 80, 60, 84, 60, 75, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 17, "nis": "2526010300", "nama": "DIAN AYU TRI ASTUTI", "jk": "P", "wali": "HADI SONO", "sem1": {"tulis": [73, 71, 78, 80, 80, 60, 88, 60, 75, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 18, "nis": "2526010301", "nama": "DIANDRA AQILA PUTRI", "jk": "P", "wali": "ARI GUSTIANI", "sem1": {"tulis": [72, 66, 70, 60, 80, 75, 62, 60, 75, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 19, "nis": "2526010302", "nama": "FAKHRI DAFFA RAMADHAN", "jk": "L", "wali": "HANIPUDIN", "sem1": {"tulis": [73, 63, 70, 60, 80, 60, 73, 75, 75, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 20, "nis": "2526010303", "nama": "FATWATUL LESTARI", "jk": "P", "wali": "M PARTIMAN S", "sem1": {"tulis": [78, 69, 78, 65, 80, 60, 86, 60, 75, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 21, "nis": "2526010304", "nama": "FITRI ALYA JULIANTI", "jk": "P", "wali": "SARIPIN", "sem1": {"tulis": [82, 65, 75, 60, 80, 60, 64, 60, 75, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 22, "nis": "2526010305", "nama": "GHANI IJMA ALFARISI", "jk": "L", "wali": "IJANG", "sem1": {"tulis": [87, 66, 70, 65, 80, 70, 84, 65, 75, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 23, "nis": "2526010306", "nama": "GILANG RAMADHAN MAULANA", "jk": "L", "wali": "EMAN", "sem1": {"tulis": [73, 67, 70, 60, 80, 60, 78, 85, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 24, "nis": "2526010307", "nama": "HAMZAH FANSHURI", "jk": "L", "wali": "LASIMAN", "sem1": {"tulis": [70, 63, 70, 60, 80, 60, 69, 60, 65, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 25, "nis": "2526010308", "nama": "HANAA LISMUFIIDAH", "jk": "P", "wali": "SURYADI", "sem1": {"tulis": [81, 84, 90, 90, 80, 65, 84, 60, 60, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 26, "nis": "2526010309", "nama": "IBNI FAIRUZ", "jk": "L", "wali": "DAYAT", "sem1": {"tulis": [78, 75, 70, 60, 80, 70, 84, 60, 70, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 27, "nis": "2526010310", "nama": "INDRA FARID AZAHIR", "jk": "L", "wali": "..........................", "sem1": {"tulis": [80, 85, 78, 65, 80, 65, 91, 90, 85, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 28, "nis": "2526010311", "nama": "INDRA KUSWANTO", "jk": "L", "wali": "AGUS KUSWANTO", "sem1": {"tulis": [70, 65, 70, 60, 80, 60, 75, 60, 95, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 29, "nis": "2526010312", "nama": "IRSYAD NABAWI", "jk": "L", "wali": "AJAT SUDRAJAT", "sem1": {"tulis": [72, 67, 70, 60, 80, 75, 75, 60, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 30, "nis": "2526010314", "nama": "LISKA NOVITA SAFITRI", "jk": "P", "wali": "MASNAN", "sem1": {"tulis": [92, 78, 80, 90, 80, 70, 95, 90, 85, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 31, "nis": "2526010315", "nama": "MIZAN ARIFIN AL ASHRAFI", "jk": "L", "wali": "M ARIFIN", "sem1": {"tulis": [76, 70, 70, 60, 80, 65, 86, 80, 85, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 32, "nis": "2526010316", "nama": "MOCHAMAD ANDRA APRIANA", "jk": "L", "wali": "AAN NURHIDAYAT", "sem1": {"tulis": [60, 62, 70, 60, 80, 60, 60, 60, 60, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 33, "nis": "2526010318", "nama": "MUHAMMAD AZKA ILJAM ATALLAH", "jk": "L", "wali": "SAMSUL MA'ARIF", "sem1": {"tulis": [78, 67, 75, 60, 80, 70, 80, 90, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 34, "nis": "2526010319", "nama": "MUHAMMAD HILMI MUFAROZ", "jk": "L", "wali": "ABDUL BASITH", "sem1": {"tulis": [72, 64, 70, 60, 80, 60, 60, 60, 60, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 35, "nis": "2526010320", "nama": "MUTIARA SAFITRI", "jk": "P", "wali": "LASNO", "sem1": {"tulis": [60, 63, 70, 60, 80, 60, 60, 60, 60, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 36, "nis": "2526010321", "nama": "NABILA SUKMA N. M.", "jk": "P", "wali": "..........................", "sem1": {"tulis": [81, 77, 70, 75, 80, 75, 93, 60, 90, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 37, "nis": "2526010322", "nama": "NADIA NURFADILAH", "jk": "P", "wali": "RASNO", "sem1": {"tulis": [73, 64, 70, 60, 80, 60, 78, 65, 75, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 38, "nis": "2526010323", "nama": "NADZIFA ZULFA AQILA", "jk": "P", "wali": "TAUFIQ ARIFIN", "sem1": {"tulis": [90, 77, 80, 85, 80, 85, 95, 90, 85, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 39, "nis": "2526010324", "nama": "NASYA KALILA RASYA PUTRI", "jk": "P", "wali": "..........................", "sem1": {"tulis": [80, 71, 78, 60, 80, 65, 88, 75, 85, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 40, "nis": "2526010325", "nama": "NASYWAA NURUL HIDAYAH", "jk": "P", "wali": "AJIS KUSNENDI", "sem1": {"tulis": [75, 76, 78, 80, 80, 65, 80, 75, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 41, "nis": "2526010326", "nama": "NATASYA FITRI NURUL AISYAH", "jk": "P", "wali": "HUSRON", "sem1": {"tulis": [70, 65, 70, 60, 80, 60, 60, 60, 60, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 42, "nis": "2526010327", "nama": "NAYA AZWA KURNIA SENJAYA", "jk": "P", "wali": "DENA KURNIA S", "sem1": {"tulis": [77, 78, 78, 90, 80, 70, 95, 80, 85, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 43, "nis": "2526010328", "nama": "NAZWA AZIYA FADILAH", "jk": "L", "wali": "RIDWAN FADILAH", "sem1": {"tulis": [80, 69, 78, 75, 80, 65, 91, 75, 85, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 44, "nis": "2526010329", "nama": "NUROTUN NABILAH", "jk": "P", "wali": "JABIDI", "sem1": {"tulis": [73, 76, 78, 65, 80, 75, 91, 60, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 45, "nis": "2526010330", "nama": "PRICILA AGNIA AKMAL", "jk": "P", "wali": "ENDANG KUSMAYA", "sem1": {"tulis": [70, 63, 70, 60, 80, 60, 71, 60, 65, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 46, "nis": "2526010331", "nama": "QONITA AISYA SYAFIQO", "jk": "P", "wali": "AHMAD FAIZAL", "sem1": {"tulis": [77, 72, 78, 90, 80, 65, 88, 75, 90, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 47, "nis": "2526010332", "nama": "RAFI SEPTA NUGRAHA", "jk": "L", "wali": "IWAN", "sem1": {"tulis": [72, 75, 70, 60, 80, 60, 73, 60, 70, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 48, "nis": "2526010334", "nama": "RAHMA DINA N. F.", "jk": "P", "wali": "..........................", "sem1": {"tulis": [70, 74, 70, 60, 80, 60, 71, 60, 90, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 49, "nis": "2526010335", "nama": "RAIHANATUZZAHRO", "jk": "P", "wali": "NURUL HUDA", "sem1": {"tulis": [78, 81, 78, 65, 80, 65, 86, 65, 90, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 50, "nis": "2526010336", "nama": "RAIHATUL JANNAH", "jk": "P", "wali": "..........................", "sem1": {"tulis": [90, 70, 80, 80, 80, 85, 95, 85, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 51, "nis": "2526010337", "nama": "RAYHAN FARID WAHYUDIN", "jk": "L", "wali": "WAHYUDIN", "sem1": {"tulis": [70, 60, 60, 60, 80, 60, 60, 60, 60, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 52, "nis": "2526010338", "nama": "RIZAL FARHIN", "jk": "L", "wali": "SUDARYA", "sem1": {"tulis": [72, 66, 78, 60, 80, 60, 86, 75, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 53, "nis": "2526010339", "nama": "RIZKI FAHMI FIRMANSYAH", "jk": "L", "wali": "WENI", "sem1": {"tulis": [77, 80, 75, 65, 80, 70, 86, 90, 90, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 54, "nis": "2526010340", "nama": "RIZKI ISKANDAR", "jk": "L", "wali": "HARJO", "sem1": {"tulis": [72, 76, 70, 60, 80, 65, 95, 70, 85, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 55, "nis": "2526010341", "nama": "RIZKI NAUFAL GHANI", "jk": "L", "wali": "HENDRI", "sem1": {"tulis": [72, 67, 70, 60, 80, 60, 78, 60, 65, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 56, "nis": "2526010342", "nama": "RIZQI AMALIYADI", "jk": "L", "wali": "SUGENG PRIYANTO", "sem1": {"tulis": [70, 63, 70, 60, 80, 60, 64, 60, 70, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 57, "nis": "2425010284", "nama": "SHERIN APRILIA", "jk": "P", "wali": "YAYAN", "sem1": {"tulis": [76, 80, 78, 75, 80, 75, 78, 80, 80, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 58, "nis": "2526010343", "nama": "SIFA OKTAVIANI", "jk": "P", "wali": "..........................", "sem1": {"tulis": [70, 67, 70, 60, 80, 60, 73, 60, 75, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 59, "nis": "2526010344", "nama": "SUBHAN FAWWAZ", "jk": "L", "wali": "ROHMAN TULOH", "sem1": {"tulis": [72, 64, 70, 60, 80, 60, 73, 60, 70, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 60, "nis": "2526010345", "nama": "VANILA CAHYA KAMILA", "jk": "P", "wali": "Dedi Wiswanto", "sem1": {"tulis": [83, 72, 85, 85, 80, 90, 93, 90, 85, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 61, "nis": "2526010346", "nama": "ZAINAL ARIFIN RAMADANI", "jk": "L", "wali": "ABDUL MUNIB", "sem1": {"tulis": [70, 67, 70, 60, 80, 60, 78, 60, 61, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 62, "nis": "2526010347", "nama": "ZIDAN AKMAL MUSYAFA", "jk": "L", "wali": "SUDARSONO", "sem1": {"tulis": [80, 78, 83, 75, 80, 70, 93, 90, 90, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}, {"id": 63, "nis": "2526010348", "nama": "ZIDNI HUDA MUBAROK", "jk": "L", "wali": "Basir Nurdin", "sem1": {"tulis": [78, 76, 78, 70, 80, 65, 91, 60, 70, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ"}, "sem2": {"tulis": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "hafalan": [0, 0], "kitab": [0, 0], "kepribadian": {"kelakuan": "B", "kerajinan": "B", "kerapihan": "B"}, "absensi": {"sakit": 0, "izin": 0, "alpa": 0}, "catatan": "العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ", "keputusan": "Naik Kelas Ke Kelas 3"}}]
+      };
+
+      let appState = loadState();
+      let currentUser = null;
+      let activeTab = 'daftar';
+      let selectedStudentId = 1;
+      let printStudentId = 1;
+
+      function loadState() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) return JSON.parse(saved);
+        } catch (e) {}
+        return JSON.parse(JSON.stringify(DEFAULT_STATE));
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        } catch (e) {}
+      }
+
+      function getSemKey() {
+        return appState.activeSemester || 'sem1';
+      }
+
+      function getSemCfg() {
+        return appState.semConfig[getSemKey()];
+      }
+
+      function showToast(msg, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const el = document.createElement('div');
+        const bg = type === 'error' ? 'bg-red-600' : 'bg-emerald-700';
+        el.className = `${bg} text-white px-4 py-2.5 rounded-xl shadow-lg text-xs sm:text-sm font-medium transition-opacity duration-300`;
+        el.textContent = msg;
+        container.appendChild(el);
+        setTimeout(() => {
+          el.classList.add('opacity-0');
+          setTimeout(() => el.remove(), 300);
+        }, 2600);
+      }
+
+      function askConfirm(title, message, onConfirm) {
+        const modal = document.getElementById('confirm-modal');
+        document.getElementById('confirm-title').textContent = title;
+        document.getElementById('confirm-message').textContent = message;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        const okBtn = document.getElementById('confirm-ok');
+        const cancelBtn = document.getElementById('confirm-cancel');
+
+        function cleanup() {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+          okBtn.removeEventListener('click', handleOk);
+          cancelBtn.removeEventListener('click', cleanup);
+        }
+        function handleOk() {
+          cleanup();
+          onConfirm();
+        }
+        okBtn.addEventListener('click', handleOk);
+        cancelBtn.addEventListener('click', cleanup);
+      }
+
+      function toEasternArabicDigits(num) {
+        const map = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+        return String(num).replace(/\d/g, d => map[Number(d)]);
+      }
+
+      function terbilangIndo(n) {
+        const num = Math.round(Number(n) || 0);
+        if (num === 0) return 'Nol';
+        const satuan = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'];
+        if (num < 12) return satuan[num];
+        if (num < 20) return satuan[num - 10] + ' Belas';
+        if (num < 100) {
+          const puluh = Math.floor(num / 10);
+          const sisa = num % 10;
+          return satuan[puluh] + ' Puluh' + (sisa ? ' ' + satuan[sisa] : '');
+        }
+        if (num === 100) return 'Seratus';
+        if (num < 200) return 'Seratus ' + terbilangIndo(num - 100);
+        if (num < 1000) {
+          const ratus = Math.floor(num / 100);
+          const sisa = num % 100;
+          return satuan[ratus] + ' Ratus' + (sisa ? ' ' + terbilangIndo(sisa) : '');
+        }
+        return String(num);
+      }
+
+      function terbilangArab(n) {
+        const num = Math.round(Number(n) || 0);
+        if (num === 0) return 'صفر';
+        const ones = ['', 'واحد', 'اثناني', 'ثلاثة', 'أربعة', 'خمسة', 'ستّة', 'سبعة', 'ثمانية', 'تسعة'];
+        const teens = ['عشرة', 'أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر', 'ستّة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'];
+        const tens = ['', 'عشرة', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستّون', 'سبعون', 'ثمانون', 'تسعون'];
+
+        if (num < 10) return ones[num];
+        if (num < 20) return teens[num - 10];
+        if (num < 100) {
+          const u = num % 10;
+          const t = Math.floor(num / 10);
+          return u === 0 ? tens[t] : `${ones[u]} و ${tens[t]}`;
+        }
+        if (num === 100) return 'مائة';
+        return toEasternArabicDigits(num);
+      }
+
+      function predikatKepribadian(huruf) {
+        const map = { A: 'Sangat Baik', B: 'Baik', C: 'Cukup', D: 'Kurang', E: 'Buruk' };
+        return map[huruf] || 'Baik';
+      }
+
+      function computeStudentMetrics() {
+        const semKey = getSemKey();
+        const cfg = getSemCfg();
+        const activeTulisIdx = cfg.subjects.tulis.map((s, i) => (s.active && s.indo.trim() !== '' ? i : -1)).filter(i => i !== -1);
+        const activeHafalanIdx = cfg.subjects.hafalan.map((s, i) => (s.active && s.indo.trim() !== '' ? i : -1)).filter(i => i !== -1);
+        const activeKitabIdx = cfg.subjects.kitab.map((s, i) => (s.active && s.indo.trim() !== '' ? i : -1)).filter(i => i !== -1);
+
+        const subjectCount = activeTulisIdx.length + activeHafalanIdx.length + activeKitabIdx.length;
+
+        const computed = appState.students.map(st => {
+          const rec = st[semKey];
+          const sumTulis = activeTulisIdx.reduce((acc, idx) => acc + (Number(rec.tulis[idx]) || 0), 0);
+          const sumHafalan = activeHafalanIdx.reduce((acc, idx) => acc + (Number(rec.hafalan[idx]) || 0), 0);
+          const sumKitab = activeKitabIdx.reduce((acc, idx) => acc + (Number(rec.kitab[idx]) || 0), 0);
+          const total = sumTulis + sumHafalan + sumKitab;
+          const rata = subjectCount > 0 ? total / subjectCount : 0;
+          return {
+            id: st.id,
+            nis: st.nis,
+            nama: st.nama,
+            jk: st.jk,
+            wali: st.wali,
+            rec,
+            total,
+            rata
+          };
+        });
+
+        const sortedTotals = [...computed].sort((a, b) => b.total - a.total);
+        computed.forEach(st => {
+          st.rank = sortedTotals.findIndex(item => item.total === st.total) + 1;
+        });
+
+        return { computed, subjectCount };
+      }
+
+      function updateSemesterButtons() {
+        const semKey = getSemKey();
+        const b1 = document.getElementById('btn-sem-1');
+        const b2 = document.getElementById('btn-sem-2');
+        if (semKey === 'sem1') {
+          b1.className = 'sem-switch-btn px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition bg-emerald-600 text-white shadow-sm';
+          b2.className = 'sem-switch-btn px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900';
+        } else {
+          b2.className = 'sem-switch-btn px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition bg-emerald-600 text-white shadow-sm';
+          b1.className = 'sem-switch-btn px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition text-slate-600 hover:text-slate-900';
+        }
+        const cfg = getSemCfg();
+        document.getElementById('nav-subtitle').textContent = `${cfg.kelas} • ${cfg.label} (${cfg.tahunPelajaran})`;
+      }
+
+      function setSemester(semKey) {
+        appState.activeSemester = semKey;
+        saveState();
+        updateSemesterButtons();
+        if (activeTab === 'daftar') renderStudentTable();
+        if (activeTab === 'input') renderInputTab();
+        if (activeTab === 'pengaturan') renderSettingsTab();
+        if (activeTab === 'cetak') renderPrintTab();
+      }
+
+      function handleLogin(username, password) {
+        const u = username.trim().toLowerCase();
+        const p = password.trim();
+        const errEl = document.getElementById('login-error');
+
+        if (u === 'admin' && p === 'admin123') {
+          currentUser = { role: 'admin', name: 'Admin Madrasah' };
+        } else if (u === 'tatang' && p === 'ustadz123') {
+          currentUser = { role: 'wali', name: getSemCfg().waliKelas };
+        } else {
+          const santri = appState.students.find(s => s.nis.toLowerCase() === u);
+          if (santri && p === 'santri123') {
+            currentUser = { role: 'santri', name: santri.nama, studentId: santri.id, nis: santri.nis };
+          } else {
+            errEl.textContent = 'Username / NIS atau kata sandi salah. Silakan coba akun demo di bawah.';
+            errEl.classList.remove('hidden');
+            return;
+          }
+        }
+
+        errEl.classList.add('hidden');
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('app-view').classList.remove('hidden');
+
+        setupRoleUI();
+      }
+
+      function setupRoleUI() {
+        const badge = document.getElementById('user-badge');
+        const staffTabs = document.getElementById('staff-tabs');
+        const resetBtn = document.getElementById('btn-reset-data');
+        const selectorWrap = document.getElementById('print-student-selector-wrap');
+
+        updateSemesterButtons();
+
+        if (currentUser.role === 'santri') {
+          badge.textContent = `Santri: ${currentUser.name}`;
+          staffTabs.classList.add('hidden');
+          resetBtn.classList.add('hidden');
+          selectorWrap.classList.add('hidden');
+          printStudentId = currentUser.studentId;
+          switchTab('cetak');
+        } else {
+          badge.textContent = currentUser.role === 'admin' ? 'Admin Madrasah' : `Wali Kelas: ${getSemCfg().waliKelas}`;
+          staffTabs.classList.remove('hidden');
+          resetBtn.classList.remove('hidden');
+          selectorWrap.classList.remove('hidden');
+          switchTab('daftar');
+        }
+      }
+
+      function switchTab(tabName) {
+        activeTab = tabName;
+        ['daftar', 'input', 'pengaturan', 'cetak'].forEach(t => {
+          const sec = document.getElementById(`tab-${t}`);
+          if (t === tabName) sec.classList.remove('hidden');
+          else sec.classList.add('hidden');
+        });
+
+        document.querySelectorAll('.nav-tab').forEach(btn => {
+          if (btn.dataset.tab === tabName) {
+            btn.classList.add('border-emerald-600', 'text-emerald-700', 'font-semibold');
+            btn.classList.remove('border-transparent', 'text-slate-600', 'font-medium');
+          } else {
+            btn.classList.remove('border-emerald-600', 'text-emerald-700', 'font-semibold');
+            btn.classList.add('border-transparent', 'text-slate-600', 'font-medium');
+          }
+        });
+
+        if (tabName === 'daftar') renderStudentTable();
+        if (tabName === 'input') renderInputTab();
+        if (tabName === 'pengaturan') renderSettingsTab();
+        if (tabName === 'cetak') renderPrintTab();
+      }
+
+      // TAB 1: Student Table
+      function renderStudentTable() {
+        const { computed } = computeStudentMetrics();
+        const cfg = getSemCfg();
+        const q = (document.getElementById('search-santri').value || '').toLowerCase();
+        const filtered = computed.filter(s => s.nama.toLowerCase().includes(q) || s.nis.toLowerCase().includes(q));
+
+        document.getElementById('table-heading').textContent = `Rekap Nilai Santri — ${cfg.label} (${cfg.kelas})`;
+        document.getElementById('stat-total-santri').textContent = computed.length;
+        const avgClass = computed.length ? (computed.reduce((a, b) => a + b.total, 0) / computed.length).toFixed(1) : '0';
+        document.getElementById('stat-rata-kelas').textContent = avgClass;
+        const maxScore = computed.length ? Math.max(...computed.map(s => s.total)) : 0;
+        document.getElementById('stat-max-nilai').textContent = maxScore;
+        document.getElementById('stat-kelas-label').textContent = `${cfg.kelas} (${getSemKey() === 'sem1' ? 'Sem 1' : 'Sem 2'})`;
+
+        const tbody = document.getElementById('student-table-body');
+        tbody.innerHTML = '';
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-slate-400 text-sm">Tidak ada santri yang cocok dengan pencarian.</td></tr>';
+          return;
+        }
+
+        filtered.forEach(st => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-emerald-50/40 transition';
+          const rankBadge = st.rank <= 3
+            ? `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs">#${st.rank}</span>`
+            : `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-600 font-semibold text-xs">#${st.rank}</span>`;
+
+          tr.innerHTML = `
+            <td class="py-3 px-4">${rankBadge}</td>
+            <td class="py-3 px-4 font-mono text-xs text-slate-600">${st.nis}</td>
+            <td class="py-3 px-4">
+              <input type="text" value="${escapeHtml(st.nama)}" data-inline-name="${st.id}" class="inline-name-input w-full max-w-[230px] px-2 py-1 rounded-lg border border-transparent hover:border-slate-300 focus:border-emerald-500 focus:bg-white bg-transparent font-semibold text-slate-800 outline-none transition" title="Klik untuk ubah nama santri" />
+            </td>
+            <td class="py-3 px-4 text-center text-xs text-slate-600">${st.jk}</td>
+            <td class="py-3 px-4 text-right font-bold text-slate-900">${st.total}</td>
+            <td class="py-3 px-4 text-right text-xs text-slate-600">${st.rata.toFixed(2)}</td>
+            <td class="py-3 px-4 text-center text-xs font-semibold text-slate-700">${st.rec.kepribadian.kelakuan}/${st.rec.kepribadian.kerajinan}/${st.rec.kepribadian.kerapihan}</td>
+            <td class="py-3 px-4 text-center text-xs text-slate-600">${st.rec.absensi.sakit}/${st.rec.absensi.izin}/${st.rec.absensi.alpa}</td>
+            <td class="py-3 px-4 text-right whitespace-nowrap space-x-1">
+              <button type="button" data-action="edit" data-id="${st.id}" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 transition">Nilai</button>
+              <button type="button" data-action="print" data-id="${st.id}" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white transition">Rapor</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        tbody.querySelectorAll('.inline-name-input').forEach(inp => {
+          inp.addEventListener('change', (e) => {
+            const id = Number(e.target.dataset.inlineName);
+            const st = appState.students.find(s => s.id === id);
+            if (st) {
+              st.nama = e.target.value.trim() || st.nama;
+              saveState();
+              showToast(`Nama santri diperbarui menjadi ${st.nama}`);
+            }
+          });
+        });
+
+        tbody.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            selectedStudentId = Number(btn.dataset.id);
+            switchTab('input');
+          });
+        });
+
+        tbody.querySelectorAll('button[data-action="print"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            printStudentId = Number(btn.dataset.id);
+            switchTab('cetak');
+          });
+        });
+      }
+
+      // TAB 2: Input / Edit Nilai
+      function renderInputTab() {
+        const semKey = getSemKey();
+        const cfg = getSemCfg();
+        document.getElementById('input-heading').textContent = `Input & Edit Nilai — ${cfg.label}`;
+        document.getElementById('edit-b-title').innerHTML = `B. ${escapeHtml(cfg.secBIndo)} (<span class="font-arabic">${escapeHtml(cfg.secBArab)}</span>)`;
+        document.getElementById('edit-c-title').innerHTML = `C. ${escapeHtml(cfg.secCIndo)} (<span class="font-arabic">${escapeHtml(cfg.secCArab)}</span>)`;
+
+        const kepWrap = document.getElementById('edit-keputusan-wrap');
+        if (cfg.showKeputusan) kepWrap.classList.remove('hidden');
+        else kepWrap.classList.add('hidden');
+
+        const select = document.getElementById('select-edit-student');
+        select.innerHTML = appState.students.map(s => `<option value="${s.id}">${s.nis} — ${escapeHtml(s.nama)}</option>`).join('');
+        if (!appState.students.some(s => s.id === selectedStudentId) && appState.students.length) {
+          selectedStudentId = appState.students[0].id;
+        }
+        select.value = String(selectedStudentId);
+
+        const st = appState.students.find(s => s.id === selectedStudentId);
+        if (!st) return;
+        const rec = st[semKey];
+
+        document.getElementById('edit-nama').value = st.nama;
+        document.getElementById('edit-wali').value = st.wali;
+        document.getElementById('edit-keputusan').value = rec.keputusan || 'Naik Kelas Ke Kelas 3';
+        document.getElementById('edit-kelakuan').value = rec.kepribadian.kelakuan;
+        document.getElementById('edit-kerajinan').value = rec.kepribadian.kerajinan;
+        document.getElementById('edit-kerapihan').value = rec.kepribadian.kerapihan;
+        document.getElementById('edit-sakit').value = rec.absensi.sakit;
+        document.getElementById('edit-izin').value = rec.absensi.izin;
+        document.getElementById('edit-alpa').value = rec.absensi.alpa;
+        document.getElementById('edit-catatan').value = rec.catatan;
+
+        const tulisGrid = document.getElementById('edit-tulis-grid');
+        tulisGrid.innerHTML = '';
+        cfg.subjects.tulis.forEach((sub, idx) => {
+          if (!sub.active || !sub.indo.trim()) return;
+          const val = rec.tulis[idx] || 0;
+          const card = document.createElement('div');
+          card.className = 'p-3 rounded-xl border border-slate-200 bg-slate-50/50 flex items-center justify-between gap-3';
+          card.innerHTML = `
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-slate-800 truncate">${sub.no}. ${escapeHtml(sub.indo)}</p>
+              <p class="text-xs font-arabic text-slate-500 truncate">${escapeHtml(sub.arab)}</p>
+              <p class="text-[11px] text-emerald-700 mt-0.5 live-terbilang">${terbilangIndo(val)} &bull; <span class="font-arabic">${terbilangArab(val)}</span></p>
+            </div>
+            <input type="number" min="0" max="100" value="${val}" data-cat="tulis" data-idx="${idx}" class="score-input w-20 px-2.5 py-2 border border-slate-300 rounded-lg text-sm font-bold text-center bg-white focus:ring-2 focus:ring-emerald-500 outline-none shrink-0" />
+          `;
+          tulisGrid.appendChild(card);
+        });
+
+        const hafalanGrid = document.getElementById('edit-hafalan-grid');
+        hafalanGrid.innerHTML = '';
+        cfg.subjects.hafalan.forEach((sub, idx) => {
+          if (!sub.active || !sub.indo.trim()) return;
+          const val = rec.hafalan[idx] || 0;
+          const row = document.createElement('div');
+          row.className = 'p-3 rounded-xl border border-slate-200 bg-white flex items-center justify-between gap-3';
+          row.innerHTML = `
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-slate-800">${sub.no}. ${escapeHtml(sub.indo)} (<span class="font-arabic">${escapeHtml(sub.arab)}</span>)</p>
+              <p class="text-[11px] text-emerald-700 mt-0.5 live-terbilang">${terbilangIndo(val)} &bull; <span class="font-arabic">${terbilangArab(val)}</span></p>
+            </div>
+            <input type="number" min="0" max="100" value="${val}" data-cat="hafalan" data-idx="${idx}" class="score-input w-20 px-2.5 py-2 border border-slate-300 rounded-lg text-sm font-bold text-center focus:ring-2 focus:ring-emerald-500 outline-none shrink-0" />
+          `;
+          hafalanGrid.appendChild(row);
+        });
+
+        const kitabGrid = document.getElementById('edit-kitab-grid');
+        kitabGrid.innerHTML = '';
+        cfg.subjects.kitab.forEach((sub, idx) => {
+          if (!sub.active || !sub.indo.trim()) return;
+          const val = rec.kitab[idx] || 0;
+          const row = document.createElement('div');
+          row.className = 'p-3 rounded-xl border border-slate-200 bg-white flex items-center justify-between gap-3';
+          row.innerHTML = `
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-slate-800">${sub.no}. ${escapeHtml(sub.indo)} (<span class="font-arabic">${escapeHtml(sub.arab)}</span>)</p>
+              <p class="text-[11px] text-emerald-700 mt-0.5 live-terbilang">${terbilangIndo(val)} &bull; <span class="font-arabic">${terbilangArab(val)}</span></p>
+            </div>
+            <input type="number" min="0" max="100" value="${val}" data-cat="kitab" data-idx="${idx}" class="score-input w-20 px-2.5 py-2 border border-slate-300 rounded-lg text-sm font-bold text-center focus:ring-2 focus:ring-emerald-500 outline-none shrink-0" />
+          `;
+          kitabGrid.appendChild(row);
+        });
+
+        updateLiveTotalInForm();
+        document.querySelectorAll('.score-input').forEach(inp => {
+          inp.addEventListener('input', (e) => {
+            const v = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+            const label = e.target.parentElement.querySelector('.live-terbilang');
+            if (label) {
+              label.innerHTML = `${terbilangIndo(v)} &bull; <span class="font-arabic">${terbilangArab(v)}</span>`;
+            }
+            updateLiveTotalInForm();
+          });
+        });
+      }
+
+      function updateLiveTotalInForm() {
+        let total = 0;
+        document.querySelectorAll('.score-input').forEach(inp => {
+          total += Number(inp.value) || 0;
+        });
+        document.getElementById('edit-live-total').textContent = total;
+      }
+
+      function saveCurrentStudentForm() {
+        const st = appState.students.find(s => s.id === selectedStudentId);
+        if (!st) return false;
+        const semKey = getSemKey();
+        const rec = st[semKey];
+
+        st.nama = document.getElementById('edit-nama').value.trim() || st.nama;
+        st.wali = document.getElementById('edit-wali').value.trim() || '..........................';
+        if (getSemCfg().showKeputusan) {
+          rec.keputusan = document.getElementById('edit-keputusan').value;
+        }
+        rec.kepribadian = {
+          kelakuan: document.getElementById('edit-kelakuan').value,
+          kerajinan: document.getElementById('edit-kerajinan').value,
+          kerapihan: document.getElementById('edit-kerapihan').value
+        };
+        rec.absensi = {
+          sakit: Math.max(0, Number(document.getElementById('edit-sakit').value) || 0),
+          izin: Math.max(0, Number(document.getElementById('edit-izin').value) || 0),
+          alpa: Math.max(0, Number(document.getElementById('edit-alpa').value) || 0)
+        };
+        rec.catatan = document.getElementById('edit-catatan').value.trim();
+
+        document.querySelectorAll('.score-input').forEach(inp => {
+          const cat = inp.dataset.cat;
+          const idx = Number(inp.dataset.idx);
+          const val = Math.max(0, Math.min(100, Number(inp.value) || 0));
+          rec[cat][idx] = val;
+        });
+
+        saveState();
+        showToast(`Nilai ${st.nama} (${getSemCfg().label}) berhasil disimpan!`);
+        return true;
+      }
+
+      // TAB 3: Pengaturan
+      function renderSettingsTab() {
+        const cfg = getSemCfg();
+        document.getElementById('cfg-heading').textContent = `Pengaturan — ${cfg.label}`;
+        document.getElementById('cfg-kelas').value = cfg.kelas;
+        document.getElementById('cfg-tahun').value = cfg.tahunPelajaran;
+        document.getElementById('cfg-tanggal').value = cfg.tanggal;
+        document.getElementById('cfg-wali-kelas').value = cfg.waliKelas;
+        document.getElementById('cfg-kepala').value = cfg.kepalaMadrasah;
+
+        const container = document.getElementById('subjects-config-list');
+        container.innerHTML = '';
+
+        const sections = [
+          { key: 'tulis', title: 'A. TES TULIS (12 Slot)' },
+          { key: 'hafalan', title: `B. ${cfg.secBIndo} (2 Slot)` },
+          { key: 'kitab', title: `C. ${cfg.secCIndo} (2 Slot)` }
+        ];
+
+        sections.forEach(sec => {
+          const box = document.createElement('div');
+          box.className = 'space-y-2';
+          box.innerHTML = `<h4 class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg">${sec.title}</h4>`;
+          cfg.subjects[sec.key].forEach((sub, idx) => {
+            const row = document.createElement('div');
+            row.className = 'grid grid-cols-12 gap-2 items-center';
+            row.innerHTML = `
+              <span class="col-span-1 text-xs font-semibold text-slate-500 text-center">${sub.no}.</span>
+              <input type="text" placeholder="Nama Indonesia" value="${escapeHtml(sub.indo)}" data-sub-cat="${sec.key}" data-sub-idx="${idx}" data-sub-field="indo" class="col-span-6 px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 outline-none" />
+              <input type="text" placeholder="الاسم بالعربية" value="${escapeHtml(sub.arab)}" data-sub-cat="${sec.key}" data-sub-idx="${idx}" data-sub-field="arab" class="col-span-5 px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs font-arabic text-right focus:ring-2 focus:ring-emerald-500 outline-none" />
+            `;
+            box.appendChild(row);
+          });
+          container.appendChild(box);
+        });
+      }
+
+      // TAB 4: Pratinjau & Cetak Rapor
+      function renderPrintTab() {
+        const semKey = getSemKey();
+        const cfg = getSemCfg();
+        const sh = appState.sharedHeader;
+        const { computed } = computeStudentMetrics();
+
+        document.getElementById('print-sem-badge').textContent = `${cfg.label} • ${cfg.kelas}`;
+
+        const select = document.getElementById('select-print-student');
+        select.innerHTML = computed.map(s => `<option value="${s.id}">${s.nis} — ${escapeHtml(s.nama)} (Rank #${s.rank})</option>`).join('');
+        if (!computed.some(s => s.id === printStudentId) && computed.length) {
+          printStudentId = computed[0].id;
+        }
+        select.value = String(printStudentId);
+
+        const st = computed.find(s => s.id === printStudentId);
+        if (!st) return;
+        const rec = st.rec;
+
+        const activeTulis = cfg.subjects.tulis.map((s, i) => ({ ...s, val: rec.tulis[i] || 0 })).filter(s => s.active && s.indo.trim() !== '');
+        const activeHafalan = cfg.subjects.hafalan.map((s, i) => ({ ...s, val: rec.hafalan[i] || 0 })).filter(s => s.active && s.indo.trim() !== '');
+        const activeKitab = cfg.subjects.kitab.map((s, i) => ({ ...s, val: rec.kitab[i] || 0 })).filter(s => s.active && s.indo.trim() !== '');
+
+        const renderRows = (items) => items.map((item, idx) => `
+          <tr class="border-b border-slate-400">
+            <td class="py-1 px-2 text-center border-r border-slate-400">${idx + 1}</td>
+            <td class="py-1 px-2 border-r border-slate-400 font-medium">${escapeHtml(item.indo)}</td>
+            <td class="py-1 px-2 text-center border-r border-slate-400 font-semibold">${item.val}</td>
+            <td class="py-1 px-2 border-r border-slate-400 text-[11px]">${terbilangIndo(item.val)}</td>
+            <td class="py-1 px-2 border-r border-slate-400 font-arabic text-sm text-right">${terbilangArab(item.val)}</td>
+            <td class="py-1 px-2 text-center border-r border-slate-400 font-arabic text-sm font-bold">${toEasternArabicDigits(item.val)}</td>
+            <td class="py-1 px-2 border-r border-slate-400 font-arabic text-sm text-right">${escapeHtml(item.arab)}</td>
+            <td class="py-1 px-2 text-center font-arabic text-sm">${toEasternArabicDigits(idx + 1)}</td>
+          </tr>
+        `).join('');
+
+        const madrasahArabTitle = semKey === 'sem1' ? sh.madrasahArabSem1 : sh.madrasahArabSem2;
+
+        const footerDateDecision = cfg.showKeputusan
+          ? `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs mb-8 print-page-break">
+               <div>
+                 <p class="text-slate-500">Dikeluarkan di :</p>
+                 <p class="font-semibold">${escapeHtml(cfg.tanggal)}</p>
+               </div>
+               <div class="border border-slate-300 rounded-lg p-2.5 bg-slate-50">
+                 <p class="font-bold text-slate-700 mb-0.5">Keputusan :</p>
+                 <p class="text-[11px] text-slate-600">Dengan memperhatikan hasil yang dicapai pada semester ke-1 dan ke-2, maka santri tersebut di atas ditetapkan:</p>
+                 <p class="font-bold text-emerald-800 text-sm mt-1">${escapeHtml(rec.keputusan || 'Naik Kelas Ke Kelas 3')}</p>
+               </div>
+             </div>`
+          : `<div class="flex justify-end text-xs mb-8 print-page-break">
+               <div class="text-left sm:w-64">
+                 <p class="text-slate-500">Dikeluarkan di :</p>
+                 <p class="font-semibold">${escapeHtml(cfg.tanggal)}</p>
+               </div>
+             </div>`;
+
+        document.getElementById('raport-sheet').innerHTML = `
+          <!-- Kop Madrasah -->
+          <div class="flex items-center justify-between border-b-4 border-double border-slate-800 pb-4 mb-4 gap-4">
+            <div class="w-16 h-16 shrink-0 flex items-center justify-center rounded-full border-2 border-emerald-800 bg-emerald-50 text-emerald-800">
+              <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <div class="flex-1 text-center">
+              <p class="font-arabic text-base sm:text-lg font-bold text-slate-900">${escapeHtml(sh.yayasanArab)}</p>
+              <p class="font-arabic text-lg sm:text-2xl font-bold text-emerald-900 leading-snug">${escapeHtml(madrasahArabTitle)}</p>
+              <p class="font-arabic text-xs sm:text-sm text-slate-700">الرقم الإحصائي : ${escapeHtml(sh.statistikArab)}</p>
+              <p class="font-arabic text-xs text-slate-600 mt-0.5">${escapeHtml(sh.alamatArab)}</p>
+            </div>
+          </div>
+
+          <div class="text-center mb-4">
+            <h2 class="font-arabic text-xl font-bold underline">تقرير الدراسة</h2>
+            <p class="text-xs font-semibold uppercase tracking-widest text-slate-600">Laporan Hasil Belajar Santri &bull; ${escapeHtml(cfg.label)}</p>
+          </div>
+
+          <!-- Identitas Santri -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1.5 text-xs sm:text-sm mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <div class="flex"><span class="w-32 text-slate-600">Nama Santri</span><span class="mr-2">:</span><span class="font-bold">${escapeHtml(st.nama)}</span></div>
+            <div class="flex"><span class="w-32 text-slate-600">Kelas</span><span class="mr-2">:</span><span class="font-bold">${escapeHtml(cfg.kelas)}</span></div>
+            <div class="flex"><span class="w-32 text-slate-600">Orang Tua / Wali</span><span class="mr-2">:</span><span>${escapeHtml(st.wali)}</span></div>
+            <div class="flex"><span class="w-32 text-slate-600">Tahun Pelajaran</span><span class="mr-2">:</span><span class="font-semibold">${escapeHtml(cfg.tahunPelajaran)}</span></div>
+          </div>
+
+          <!-- Tabel Nilai Dua Bahasa -->
+          <div class="overflow-x-auto mb-4">
+            <table class="w-full border border-slate-600 text-xs">
+              <thead>
+                <tr class="bg-emerald-50 border-b border-slate-600 font-bold text-center">
+                  <th rowspan="2" class="py-1.5 px-2 border-r border-slate-400 w-8">No</th>
+                  <th rowspan="2" class="py-1.5 px-2 border-r border-slate-400">Mata Pelajaran</th>
+                  <th colspan="2" class="py-1 px-2 border-r border-slate-400 border-b border-slate-400">Hasil Tes</th>
+                  <th colspan="2" class="py-1 px-2 border-r border-slate-400 border-b border-slate-400 font-arabic text-sm">${escapeHtml(cfg.arabHeaderCol)}</th>
+                  <th rowspan="2" class="py-1.5 px-2 border-r border-slate-400 font-arabic text-sm">الفنون</th>
+                  <th rowspan="2" class="py-1.5 px-2 font-arabic text-sm w-10">النمرة</th>
+                </tr>
+                <tr class="bg-emerald-50/70 border-b border-slate-600 font-semibold text-center">
+                  <th class="py-1 px-2 border-r border-slate-400 w-14">Angka</th>
+                  <th class="py-1 px-2 border-r border-slate-400">Huruf</th>
+                  <th class="py-1 px-2 border-r border-slate-400 font-arabic text-sm">اللفظ</th>
+                  <th class="py-1 px-2 border-r border-slate-400 font-arabic text-sm w-14">الرقم</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="bg-slate-100 border-b border-slate-400 font-bold">
+                  <td class="py-1 px-2 text-center border-r border-slate-400">A</td>
+                  <td colspan="5" class="py-1 px-2 border-r border-slate-400">TES TULIS</td>
+                  <td colspan="2" class="py-1 px-2 font-arabic text-sm text-right">الكتابة</td>
+                </tr>
+                ${renderRows(activeTulis)}
+
+                <tr class="bg-slate-100 border-b border-slate-400 font-bold">
+                  <td class="py-1 px-2 text-center border-r border-slate-400">B</td>
+                  <td colspan="5" class="py-1 px-2 border-r border-slate-400">${escapeHtml(cfg.secBIndo)}</td>
+                  <td colspan="2" class="py-1 px-2 font-arabic text-sm text-right">${escapeHtml(cfg.secBArab)}</td>
+                </tr>
+                ${renderRows(activeHafalan)}
+
+                <tr class="bg-slate-100 border-b border-slate-400 font-bold">
+                  <td class="py-1 px-2 text-center border-r border-slate-400">C</td>
+                  <td colspan="5" class="py-1 px-2 border-r border-slate-400">${escapeHtml(cfg.secCIndo)}</td>
+                  <td colspan="2" class="py-1 px-2 font-arabic text-sm text-right">${escapeHtml(cfg.secCArab)}</td>
+                </tr>
+                ${renderRows(activeKitab)}
+
+                <tr class="bg-emerald-50/80 border-b border-slate-400 font-bold">
+                  <td colspan="2" class="py-1.5 px-2 border-r border-slate-400">JUMLAH</td>
+                  <td class="py-1.5 px-2 text-center border-r border-slate-400">${st.total}</td>
+                  <td colspan="2" class="py-1.5 px-2 border-r border-slate-400 text-[11px] font-normal italic">${terbilangIndo(st.total)}</td>
+                  <td class="py-1.5 px-2 text-center border-r border-slate-400 font-arabic text-sm">${toEasternArabicDigits(st.total)}</td>
+                  <td colspan="2" class="py-1.5 px-2 font-arabic text-sm text-right">الجملة</td>
+                </tr>
+                <tr class="bg-emerald-50/50 font-bold">
+                  <td colspan="2" class="py-1.5 px-2 border-r border-slate-400">RANGKING</td>
+                  <td class="py-1.5 px-2 text-center border-r border-slate-400">${st.rank}</td>
+                  <td colspan="2" class="py-1.5 px-2 border-r border-slate-400 font-normal">dari ${computed.length} santri</td>
+                  <td class="py-1.5 px-2 text-center border-r border-slate-400 font-arabic text-sm">${toEasternArabicDigits(st.rank)}</td>
+                  <td colspan="2" class="py-1.5 px-2 font-arabic text-sm text-right">الدرجة</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Kepribadian & Absensi -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-xs print-page-break">
+            <table class="w-full border border-slate-500">
+              <thead>
+                <tr class="bg-slate-100 border-b border-slate-500 font-bold">
+                  <th colspan="4" class="py-1 px-2 text-left">KEPRIBADIAN</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-slate-300">
+                  <td class="py-1 px-2 w-6 text-center border-r border-slate-300">1</td>
+                  <td class="py-1 px-2 border-r border-slate-300">Kelakuan</td>
+                  <td class="py-1 px-2 w-8 text-center font-bold border-r border-slate-300">${rec.kepribadian.kelakuan}</td>
+                  <td class="py-1 px-2">${predikatKepribadian(rec.kepribadian.kelakuan)}</td>
+                </tr>
+                <tr class="border-b border-slate-300">
+                  <td class="py-1 px-2 text-center border-r border-slate-300">2</td>
+                  <td class="py-1 px-2 border-r border-slate-300">Kerajinan</td>
+                  <td class="py-1 px-2 text-center font-bold border-r border-slate-300">${rec.kepribadian.kerajinan}</td>
+                  <td class="py-1 px-2">${predikatKepribadian(rec.kepribadian.kerajinan)}</td>
+                </tr>
+                <tr>
+                  <td class="py-1 px-2 text-center border-r border-slate-300">3</td>
+                  <td class="py-1 px-2 border-r border-slate-300">Kerapihan</td>
+                  <td class="py-1 px-2 text-center font-bold border-r border-slate-300">${rec.kepribadian.kerapihan}</td>
+                  <td class="py-1 px-2">${predikatKepribadian(rec.kepribadian.kerapihan)}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <table class="w-full border border-slate-500">
+              <thead>
+                <tr class="bg-slate-100 border-b border-slate-500 font-bold">
+                  <th colspan="2" class="py-1 px-2 text-left">ABSENSI</th>
+                  <th colspan="2" class="py-1 px-2 text-right font-arabic text-sm">كشف الغياب</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-slate-300">
+                  <td class="py-1 px-2 border-r border-slate-300">Sakit</td>
+                  <td class="py-1 px-2 w-12 text-center font-semibold border-r border-slate-300">${rec.absensi.sakit}</td>
+                  <td class="py-1 px-2 w-12 text-center font-arabic text-sm border-r border-slate-300">${toEasternArabicDigits(rec.absensi.sakit)}</td>
+                  <td class="py-1 px-2 font-arabic text-sm text-right">بعذر</td>
+                </tr>
+                <tr class="border-b border-slate-300">
+                  <td class="py-1 px-2 border-r border-slate-300">Izin</td>
+                  <td class="py-1 px-2 text-center font-semibold border-r border-slate-300">${rec.absensi.izin}</td>
+                  <td class="py-1 px-2 text-center font-arabic text-sm border-r border-slate-300">${toEasternArabicDigits(rec.absensi.izin)}</td>
+                  <td class="py-1 px-2 font-arabic text-sm text-right">بغير عذر</td>
+                </tr>
+                <tr>
+                  <td class="py-1 px-2 border-r border-slate-300">Alpa</td>
+                  <td class="py-1 px-2 text-center font-semibold border-r border-slate-300">${rec.absensi.alpa}</td>
+                  <td class="py-1 px-2 text-center font-arabic text-sm border-r border-slate-300">${toEasternArabicDigits(rec.absensi.alpa)}</td>
+                  <td class="py-1 px-2 font-arabic text-sm text-right">بغير بيان</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Catatan -->
+          <div class="border border-slate-400 rounded-lg p-3 mb-4 text-xs print-page-break">
+            <p class="font-bold text-slate-700 mb-1">Catatan Wali Kelas:</p>
+            <p class="font-arabic text-base sm:text-lg text-center text-slate-900 py-1">${escapeHtml(rec.catatan)}</p>
+          </div>
+
+          ${footerDateDecision}
+
+          <!-- Tanda Tangan -->
+          <div class="grid grid-cols-3 gap-4 text-center text-xs pt-2 print-page-break">
+            <div>
+              <p class="mb-14">Orang Tua / Wali</p>
+              <p class="font-semibold">${escapeHtml(st.wali)}</p>
+            </div>
+            <div>
+              <p class="mb-14">Wali Kelas</p>
+              <p class="font-bold underline">${escapeHtml(cfg.waliKelas)}</p>
+            </div>
+            <div>
+              <p class="mb-14">Kepala Madrasah</p>
+              <p class="font-bold underline">${escapeHtml(cfg.kepalaMadrasah)}</p>
+            </div>
+          </div>
+        `;
+      }
+
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // Event Listeners
+      document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleLogin(
+          document.getElementById('login-username').value,
+          document.getElementById('login-password').value
+        );
+      });
+
+      document.querySelectorAll('.demo-login-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const u = btn.dataset.demoUser;
+          const p = btn.dataset.demoPass;
+          document.getElementById('login-username').value = u;
+          document.getElementById('login-password').value = p;
+          handleLogin(u, p);
+        });
+      });
+
+      document.getElementById('btn-sem-1').addEventListener('click', () => setSemester('sem1'));
+      document.getElementById('btn-sem-2').addEventListener('click', () => setSemester('sem2'));
+
+      document.getElementById('btn-logout').addEventListener('click', () => {
+        currentUser = null;
+        document.getElementById('app-view').classList.add('hidden');
+        document.getElementById('login-view').classList.remove('hidden');
+        document.getElementById('login-password').value = '';
+      });
+
+      document.getElementById('btn-reset-data').addEventListener('click', () => {
+        askConfirm('Reset Data ke Awal?', 'Semua perubahan nama santri, nama mapel, dan nilai pada Semester 1 & 2 akan dikembalikan ke data awal Excel.', () => {
+          appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+          saveState();
+          setupRoleUI();
+          showToast('Data dikembalikan ke bawaan awal.');
+        });
+      });
+
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      document.getElementById('search-santri').addEventListener('input', renderStudentTable);
+
+      // Add Student Modal
+      const addModal = document.getElementById('add-student-modal');
+      function closeAddModal() {
+        addModal.classList.add('hidden');
+        addModal.classList.remove('flex');
+      }
+      document.getElementById('btn-open-add-student').addEventListener('click', () => {
+        document.getElementById('new-nis').value = `2526010${349 + appState.students.length}`;
+        document.getElementById('new-nama').value = '';
+        document.getElementById('new-wali').value = '';
+        addModal.classList.remove('hidden');
+        addModal.classList.add('flex');
+      });
+      document.getElementById('close-add-student').addEventListener('click', closeAddModal);
+      document.getElementById('cancel-add-student').addEventListener('click', closeAddModal);
+      document.getElementById('add-student-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nis = document.getElementById('new-nis').value.trim();
+        const nama = document.getElementById('new-nama').value.trim();
+        const jk = document.getElementById('new-jk').value;
+        const wali = document.getElementById('new-wali').value.trim() || '..........................';
+
+        if (appState.students.some(s => s.nis.toLowerCase() === nis.toLowerCase())) {
+          showToast('NIS sudah terdaftar, gunakan NIS lain.', 'error');
+          return;
+        }
+        const newId = appState.students.length ? Math.max(...appState.students.map(s => s.id)) + 1 : 1;
+        const emptyRec = {
+          tulis: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          hafalan: [0, 0],
+          kitab: [0, 0],
+          kepribadian: { kelakuan: 'B', kerajinan: 'B', kerapihan: 'B' },
+          absensi: { sakit: 0, izin: 0, alpa: 0 },
+          catatan: 'العِلْمُ بِالتَّعَلُّمِ، وَالْبَرَكَةُ بِالْخِدْمَةِ، وَالْمَنْفَعَةُ بِالطَّاعَةِ',
+          keputusan: 'Naik Kelas Ke Kelas 3'
+        };
+        appState.students.push({
+          id: newId,
+          nis,
+          nama,
+          jk,
+          wali,
+          sem1: JSON.parse(JSON.stringify(emptyRec)),
+          sem2: JSON.parse(JSON.stringify(emptyRec))
+        });
+        saveState();
+        closeAddModal();
+        renderStudentTable();
+        showToast(`Santri ${nama} berhasil ditambahkan!`);
+      });
+
+      document.getElementById('select-edit-student').addEventListener('change', (e) => {
+        selectedStudentId = Number(e.target.value);
+        renderInputTab();
+      });
+
+      document.getElementById('btn-save-student').addEventListener('click', () => {
+        saveCurrentStudentForm();
+      });
+
+      document.getElementById('btn-save-and-print').addEventListener('click', () => {
+        if (saveCurrentStudentForm()) {
+          printStudentId = selectedStudentId;
+          switchTab('cetak');
+        }
+      });
+
+      document.getElementById('btn-save-config').addEventListener('click', () => {
+        const cfg = getSemCfg();
+        cfg.kelas = document.getElementById('cfg-kelas').value.trim() || cfg.kelas;
+        cfg.tahunPelajaran = document.getElementById('cfg-tahun').value.trim() || cfg.tahunPelajaran;
+        cfg.tanggal = document.getElementById('cfg-tanggal').value.trim();
+        cfg.waliKelas = document.getElementById('cfg-wali-kelas').value.trim();
+        cfg.kepalaMadrasah = document.getElementById('cfg-kepala').value.trim();
+        saveState();
+        updateSemesterButtons();
+        showToast(`Pengaturan ${cfg.label} disimpan!`);
+      });
+
+      document.getElementById('btn-save-subjects').addEventListener('click', () => {
+        const cfg = getSemCfg();
+        document.querySelectorAll('[data-sub-cat]').forEach(inp => {
+          const cat = inp.dataset.subCat;
+          const idx = Number(inp.dataset.subIdx);
+          const field = inp.dataset.subField;
+          cfg.subjects[cat][idx][field] = inp.value.trim();
+          cfg.subjects[cat][idx].active = cfg.subjects[cat][idx].indo.trim() !== '';
+        });
+        saveState();
+        showToast(`Daftar mapel ${cfg.label} diperbarui!`);
+      });
+
+      document.getElementById('select-print-student').addEventListener('change', (e) => {
+        printStudentId = Number(e.target.value);
+        renderPrintTab();
+      });
+
+      document.getElementById('btn-print-raport').addEventListener('click', () => {
+        window.print();
+      });
+    })();
+  </script>
+</body>
+</html>

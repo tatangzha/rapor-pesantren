@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Rapor Saya{% endblock %}
+{% block heading %}Rapor Santri{% endblock %}
+{% block nav %}
+<p class="px-4 text-[11px] font-bold uppercase tracking-wider text-brand-400 mb-2">Rapor per Semester</p>
+{% for t in tahun %}
+<a href="{{ url_for('santri_dashboard', ta=t.id) }}" id="nav-ta-{{ t.id }}" class="nav-link {{ 'active' if t.id==ta_id }}"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.6a1 1 0 01.7.3l5.4 5.4a1 1 0 01.3.7V19a2 2 0 01-2 2z"/></svg>{{ t.nama }} · {{ t.semester }}</a>
+{% else %}
+<p class="px-4 text-xs text-brand-300">Belum ada rapor.</p>
+{% endfor %}
+{% endblock %}
+{% block content %}
+<div class="rounded-2xl pattern-islamic text-white p-8 mb-6 flex flex-wrap gap-6 items-center justify-between">
+  <div>
+    <p class="text-brand-200 text-sm">Rapor Semester {{ ta.semester }} · TA {{ ta.nama }}</p>
+    <h2 class="text-2xl sm:text-3xl font-extrabold mt-1">{{ s.nama }}</h2>
+    <p class="text-brand-100 mt-1">NIS {{ s.nis }} · {{ s.kelas or '-' }} · Wali Kelas: {{ s.wali_kelas or '-' }}</p>
+  </div>
+  <a href="{{ url_for('santri_cetak', ta_id=ta.id) }}" target="_blank" id="btn-cetak" class="btn bg-gradient-to-br from-gold-400 to-gold-500 text-brand-950 shadow-lg hover:-translate-y-0.5 !px-6 !py-3">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4"/></svg>
+    Cetak Rapor
+  </a>
+</div>
+
+{% if not r and not rata %}
+<div class="card p-10 text-center text-slate-500">Rapor semester ini belum diisi oleh wali kelas.</div>
+{% else %}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="card stat-card p-5"><p class="text-xs text-slate-500">Rata-rata</p><p class="text-3xl font-extrabold text-brand-700">{{ rata or '-' }}</p></div>
+  <div class="card stat-card p-5"><p class="text-xs text-slate-500">Jumlah Nilai</p><p class="text-3xl font-extrabold text-slate-800">{{ total }}</p></div>
+  <div class="card stat-card p-5"><p class="text-xs text-slate-500">Tahfidz</p><p class="text-xl font-extrabold text-amber-600 mt-1">{{ r.tahfidz_predikat or '-' if r }}</p></div>
+  <div class="card stat-card p-5"><p class="text-xs text-slate-500">Ketidakhadiran</p><p class="text-3xl font-extrabold text-slate-800">{{ (r.sakit + r.izin + r.alfa) if r else 0 }} <span class="text-sm font-medium text-slate-400">hari</span></p></div>
+</div>
+
+<div class="grid xl:grid-cols-3 gap-6">
+  <div class="card overflow-hidden xl:col-span-2">
+    <div class="px-6 py-4 border-b border-slate-100"><h3 class="font-bold text-slate-800">Nilai Kitab</h3></div>
+    <table class="table">
+      <thead><tr><th>Mata Pelajaran</th><th>Kitab</th><th class="text-center">Nilai</th><th class="text-center">Predikat</th></tr></thead>
+      <tbody>
+      {% for n in nilai %}
+        <tr><td class="font-semibold text-slate-800">{{ n.nama }}</td><td class="italic text-slate-500">{{ n.kitab }}</td>
+          <td class="text-center"><div class="inline-flex flex-col items-center"><span class="font-extrabold text-lg">{{ n.nilai if n.nilai is not none else '-' }}</span>
+            <div class="w-16 h-1.5 rounded-full bg-slate-100 overflow-hidden mt-1"><div class="h-full bg-brand-500" style="width: {{ n.nilai or 0 }}%"></div></div></div></td>
+          <td class="text-center"><span class="w-8 h-8 inline-grid place-items-center rounded-lg bg-brand-50 text-brand-700 font-extrabold">{{ predikat_nilai(n.nilai) }}</span></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="space-y-6">
+    <div class="card p-6">
+      <h3 class="font-bold text-slate-800 mb-4">Capaian Tahfidz</h3>
+      <dl class="space-y-2 text-sm">
+        <div class="flex justify-between"><dt class="text-slate-500">Juz</dt><dd class="font-semibold">{{ r.tahfidz_juz or '-' if r }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">Surat</dt><dd class="font-semibold text-right">{{ r.tahfidz_surat or '-' if r }}</dd></div>
+        <div class="flex justify-between"><dt class="text-slate-500">Predikat</dt><dd class="font-bold text-amber-600">{{ r.tahfidz_predikat or '-' if r }}</dd></div>
+      </dl>
+    </div>
+    <div class="card p-6">
+      <h3 class="font-bold text-slate-800 mb-4">Kehadiran</h3>
+      <div class="grid grid-cols-3 gap-3 text-center">
+        {% for key, lbl, c in [('sakit','Sakit','bg-sky-50 text-sky-700'),('izin','Izin','bg-amber-50 text-amber-700'),('alfa','Alfa','bg-red-50 text-red-700')] %}
+        <div class="rounded-xl p-3 {{ c }}"><p class="text-2xl font-extrabold">{{ r[key] if r else 0 }}</p><p class="text-xs font-semibold">{{ lbl }}</p></div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card p-6 border-l-4 !border-l-brand-500">
+      <h3 class="font-bold text-slate-800 mb-2">Catatan Wali Kelas</h3>
+      <p class="text-sm text-slate-600 italic leading-relaxed">"{{ r.catatan or '-' if r else '-' }}"</p>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

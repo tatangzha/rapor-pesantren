@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Rapor {{ s.nama }} - {{ ta.nama }} {{ ta.semester }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 14mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; margin: 0; background: #e2e8f0; font-size: 12px; }
+  .page { width: 210mm; min-height: 297mm; margin: 20px auto; background: #fff; padding: 16mm; box-shadow: 0 10px 40px rgba(0,0,0,.12); position: relative; }
+  .kop { display: flex; align-items: center; gap: 16px; border-bottom: 4px double #065f46; padding-bottom: 12px; }
+  .logo { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg,#059669,#064e3b); color: #e5c158; display: grid; place-items: center; font-family: Amiri, serif; font-size: 26px; }
+  .kop h1 { margin: 0; font-size: 20px; color: #064e3b; letter-spacing: .5px; }
+  .kop p { margin: 2px 0 0; color: #475569; font-size: 11px; }
+  h2 { text-align: center; font-size: 15px; margin: 18px 0 4px; letter-spacing: 2px; color: #064e3b; }
+  .sub { text-align: center; color: #64748b; margin-bottom: 16px; }
+  .info { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; margin-bottom: 16px; }
+  .info div { display: flex; } .info span:first-child { width: 110px; color: #64748b; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+  th { background: #065f46; color: #fff; padding: 7px 8px; font-size: 11px; text-align: left; }
+  td { border: 1px solid #cbd5e1; padding: 6px 8px; }
+  tr:nth-child(even) td { background: #f0fdf4; }
+  .c { text-align: center; }
+  .sec { font-weight: 700; color: #065f46; margin: 14px 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .note { border: 1px solid #cbd5e1; border-left: 4px solid #059669; padding: 10px 12px; font-style: italic; min-height: 50px; }
+  .ttd { display: grid; grid-template-columns: 1fr 1fr; margin-top: 30px; text-align: center; }
+  .ttd .nm { margin-top: 60px; font-weight: 700; text-decoration: underline; }
+  .toolbar { position: fixed; top: 16px; right: 16px; display: flex; gap: 8px; }
+  .toolbar button { font-family: inherit; font-weight: 700; padding: 10px 18px; border-radius: 10px; border: 0; cursor: pointer; background: linear-gradient(135deg,#059669,#047857); color: #fff; box-shadow: 0 4px 14px rgba(5,150,105,.35); }
+  .toolbar button.sec2 { background: #fff; color: #334155; }
+  .wm { position: absolute; inset: 0; display: grid; place-items: center; font-family: Amiri, serif; font-size: 140px; color: rgba(5,150,105,.04); pointer-events: none; }
+  @media print { body { background: #fff; } .page { margin: 0; box-shadow: none; width: auto; min-height: auto; padding: 0; } .toolbar { display: none; } }
+</style>
+</head>
+<body>
+<div class="toolbar"><button class="sec2" onclick="window.close()">✕ Tutup</button><button onclick="window.print()" id="btn-print">🖨️ Cetak / Simpan PDF</button></div>
+<div class="page">
+  <div class="wm">بِسْمِ اللهِ</div>
+  <div class="kop">
+    <div class="logo">ن</div>
+    <div>
+      <h1>PONDOK PESANTREN AL-HIDAYAH</h1>
+      <p>Madrasah Diniyah Wustho · Jl. Pesantren No. 1, Kediri, Jawa Timur · Telp. (0354) 123456</p>
+    </div>
+  </div>
+  <h2>LAPORAN HASIL BELAJAR SANTRI</h2>
+  <div class="sub">Semester {{ ta.semester }} · Tahun Ajaran {{ ta.nama }}</div>
+
+  <div class="info">
+    <div><span>Nama Santri</span><b>: {{ s.nama }}</b></div>
+    <div><span>Kelas</span><span>: {{ s.kelas or '-' }}</span></div>
+    <div><span>NIS</span><span>: {{ s.nis }}</span></div>
+    <div><span>Wali Santri</span><span>: {{ s.wali_nama or '-' }}</span></div>
+  </div>
+
+  <div class="sec">A. Nilai Kitab</div>
+  <table>
+    <thead><tr><th class="c" style="width:36px">No</th><th>Mata Pelajaran</th><th>Kitab</th><th class="c" style="width:60px">Nilai</th><th>Terbilang</th><th class="c" style="width:60px">Predikat</th></tr></thead>
+    <tbody>
+    {% for n in nilai %}
+      <tr><td class="c">{{ loop.index }}</td><td><b>{{ n.nama }}</b></td><td><i>{{ n.kitab }}</i></td><td class="c"><b>{{ n.nilai if n.nilai is not none else '-' }}</b></td><td>{{ terbilang(n.nilai) }}</td><td class="c">{{ predikat_nilai(n.nilai) }}</td></tr>
+    {% endfor %}
+      <tr><td colspan="3" style="text-align:right"><b>Jumlah</b></td><td class="c"><b>{{ total }}</b></td><td colspan="2"></td></tr>
+      <tr><td colspan="3" style="text-align:right"><b>Rata-rata</b></td><td class="c"><b>{{ rata or '-' }}</b></td><td colspan="2"></td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec">B. Capaian Tahfidz Al-Qur'an</div>
+  <table>
+    <thead><tr><th>Juz</th><th>Surat</th><th class="c">Predikat</th></tr></thead>
+    <tbody><tr><td>{{ r.tahfidz_juz or '-' if r else '-' }}</td><td>{{ r.tahfidz_surat or '-' if r else '-' }}</td><td class="c"><b>{{ r.tahfidz_predikat or '-' if r else '-' }}</b></td></tr></tbody>
+  </table>
+
+  <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px">
+    <div>
+      <div class="sec">C. Kehadiran</div>
+      <table><tbody>
+        <tr><td>Sakit</td><td class="c">{{ r.sakit if r else 0 }} hari</td></tr>
+        <tr><td>Izin</td><td class="c">{{ r.izin if r else 0 }} hari</td></tr>
+        <tr><td>Tanpa Keterangan</td><td class="c">{{ r.alfa if r else 0 }} hari</td></tr>
+      </tbody></table>
+    </div>
+    <div>
+      <div class="sec">D. Catatan Wali Kelas</div>
+      <div class="note">{{ r.catatan or '-' if r else '-' }}</div>
+    </div>
+  </div>
+
+  <p style="font-size:10px;color:#64748b">Keterangan predikat: A = 90–100 (Mumtaz), B = 80–89 (Jayyid Jiddan), C = 70–79 (Jayyid), D = 60–69 (Maqbul), E = &lt;60 (Dhaif)</p>
+
+  <div class="ttd">
+    <div><p>Mengetahui,<br>Wali Santri</p><p class="nm">{{ s.wali_nama or '........................' }}</p></div>
+    <div><p>Kediri, ......................<br>Wali Kelas</p><p class="nm">{{ s.wali_kelas or '........................' }}</p></div>
+  </div>
+  <div style="text-align:center;margin-top:24px"><p>Mengetahui,<br>Pengasuh Pondok Pesantren</p><p class="nm" style="margin-top:60px;font-weight:700;text-decoration:underline">KH. Abdul Karim</p></div>
+</div>
+</body>
+</html>

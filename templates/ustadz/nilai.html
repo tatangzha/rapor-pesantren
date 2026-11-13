@@ -1,0 +1,77 @@
+{% extends 'ustadz/_layout.html' %}
+{% block title %}Input Nilai {{ s.nama }}{% endblock %}
+{% block heading %}Input Nilai Rapor{% endblock %}
+{% block content %}
+<a href="{{ url_for('ustadz_kelas_view', kid=k.id) }}" class="text-sm font-semibold text-brand-600 hover:underline">← Kembali ke {{ k.nama }}</a>
+<div class="card p-6 mt-4 mb-6 flex flex-wrap items-center gap-4">
+  <div class="w-14 h-14 rounded-full bg-brand-100 text-brand-700 grid place-items-center text-xl font-extrabold">{{ s.nama[:1] }}</div>
+  <div class="flex-1"><p class="text-xl font-bold text-slate-800">{{ s.nama }}</p><p class="text-sm text-slate-500">NIS {{ s.nis }} · {{ k.nama }}</p></div>
+  <span class="text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200">Semester {{ current_ta.semester }} {{ current_ta.nama }}</span>
+</div>
+
+<form method="post" class="grid xl:grid-cols-2 gap-6" id="form-nilai">
+  <!-- Nilai Kitab -->
+  <section class="card p-6">
+    <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2"><span class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 grid place-items-center text-sm">1</span>Nilai Kitab</h3>
+    <p class="text-xs text-slate-500 mb-5">Skala 0 – 100</p>
+    <div class="space-y-4">
+      {% for m in mapel %}
+      <div class="flex items-center gap-4">
+        <div class="flex-1"><p class="font-semibold text-slate-800">{{ m.nama }}</p><p class="text-xs text-slate-500 italic">{{ m.kitab }}</p></div>
+        <input type="number" min="0" max="100" class="input !w-24 text-center font-bold nilai-input" name="nilai_{{ m.id }}" id="nilai-{{ m.id }}" value="{{ nilai.get(m.id) if nilai.get(m.id) is not none else '' }}">
+        <span class="pred w-8 text-center font-extrabold text-brand-600">-</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="mt-6 p-4 rounded-xl bg-brand-50 flex justify-between items-center">
+      <span class="text-sm font-semibold text-brand-800">Rata-rata</span><span id="rata" class="text-2xl font-extrabold text-brand-700">-</span>
+    </div>
+  </section>
+
+  <div class="space-y-6">
+    <!-- Tahfidz -->
+    <section class="card p-6">
+      <h3 class="font-bold text-slate-800 mb-5 flex items-center gap-2"><span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 grid place-items-center text-sm">2</span>Capaian Tahfidz</h3>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label class="label">Juz</label><input class="input" name="tahfidz_juz" id="in-juz" placeholder="cth: Juz 30" value="{{ r.tahfidz_juz or '' if r }}"></div>
+        <div><label class="label">Predikat</label><select class="input" name="tahfidz_predikat" id="in-predikat"><option value="">— Pilih —</option>
+          {% for p in predikat %}<option {{ 'selected' if r and r.tahfidz_predikat==p }}>{{ p }}</option>{% endfor %}</select></div>
+        <div class="sm:col-span-2"><label class="label">Surat (dari – sampai)</label><input class="input" name="tahfidz_surat" id="in-surat" placeholder="cth: An-Naba' – An-Nas" value="{{ r.tahfidz_surat or '' if r }}"></div>
+      </div>
+    </section>
+    <!-- Kehadiran -->
+    <section class="card p-6">
+      <h3 class="font-bold text-slate-800 mb-5 flex items-center gap-2"><span class="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 grid place-items-center text-sm">3</span>Kehadiran (hari)</h3>
+      <div class="grid grid-cols-3 gap-4">
+        {% for key, lbl in [('sakit','Sakit'),('izin','Izin'),('alfa','Alfa')] %}
+        <div><label class="label">{{ lbl }}</label><input type="number" min="0" class="input text-center font-bold" name="{{ key }}" id="in-{{ key }}" value="{{ r[key] if r else 0 }}"></div>
+        {% endfor %}
+      </div>
+    </section>
+    <!-- Catatan -->
+    <section class="card p-6">
+      <h3 class="font-bold text-slate-800 mb-5 flex items-center gap-2"><span class="w-7 h-7 rounded-lg bg-violet-100 text-violet-700 grid place-items-center text-sm">4</span>Catatan Wali Kelas</h3>
+      <textarea class="input" rows="4" name="catatan" id="in-catatan" placeholder="Tuliskan catatan perkembangan santri...">{{ r.catatan or '' if r }}</textarea>
+    </section>
+  </div>
+
+  <div class="xl:col-span-2 flex justify-end gap-3 sticky bottom-4">
+    <a href="{{ url_for('ustadz_kelas_view', kid=k.id) }}" class="btn btn-ghost">Batal</a>
+    <button class="btn btn-primary !px-8" id="btn-simpan-nilai">💾 Simpan Nilai</button>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+  const pred = n => n>=90?'A':n>=80?'B':n>=70?'C':n>=60?'D':'E';
+  function hitung(){
+    let v=[];
+    document.querySelectorAll('.nilai-input').forEach(i=>{
+      const p=i.parentElement.querySelector('.pred');
+      if(i.value!==''){const n=+i.value;v.push(n);p.textContent=pred(n);}else p.textContent='-';
+    });
+    document.getElementById('rata').textContent=v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):'-';
+  }
+  document.querySelectorAll('.nilai-input').forEach(i=>i.addEventListener('input',hitung)); hitung();
+</script>
+{% endblock %}
